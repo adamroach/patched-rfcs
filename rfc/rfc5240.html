@@ -1,0 +1,1464 @@
+<div style='border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>This document has been updated by the following errata, which cannot be shown in-line in the document. Please see the end of this file for additional details: Technical <a href='https://www.rfc-editor.org/errata/eid1438'>Errata 1438</a>, Editorial <a href='https://www.rfc-editor.org/errata/eid1439'>Errata 1439</a>, Editorial <a href='https://www.rfc-editor.org/errata/eid1442'>Errata 1442</a>, Editorial <a href='https://www.rfc-editor.org/errata/eid1443'>Errata 1443</a></i></b></div><pre>
+
+
+
+
+
+
+Network Working Group                                           B. Joshi
+Request for Comments: 5240                     Infosys Technologies Ltd.
+Category: Standards Track                                     R. Bijlani
+                                                               June 2008
+
+
+       Protocol Independent Multicast (PIM) Bootstrap Router MIB
+
+Status of This Memo
+
+   This document specifies an Internet standards track protocol for the
+   Internet community, and requests discussion and suggestions for
+   improvements.  Please refer to the current edition of the &quot;Internet
+   Official Protocol Standards&quot; (STD 1) for the standardization state
+   and status of this protocol.  Distribution of this memo is unlimited.
+
+Abstract
+
+   This document defines a portion of the Management Information Base
+   (MIB) for use with network management protocols in the Internet
+   community.  In particular, it describes managed objects used for
+   managing the Bootstrap Router (BSR) mechanism for PIM (Protocol
+   Independent Multicast).
+
+Table of Contents
+
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   2.  The Internet-Standard Management Framework . . . . . . . . . .  2
+   3.  Conventions  . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   4.  Overview . . . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   5.  Definitions  . . . . . . . . . . . . . . . . . . . . . . . . .  3
+   6.  Security Considerations  . . . . . . . . . . . . . . . . . . . 17
+   7.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 19
+   8.  Acknowledgments  . . . . . . . . . . . . . . . . . . . . . . . 19
+   9.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+     9.1.  Normative References . . . . . . . . . . . . . . . . . . . 20
+     9.2.  Informative References . . . . . . . . . . . . . . . . . . 20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 1]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+1.  Introduction
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Technical <a href='https://www.rfc-editor.org/errata/eid1441'>Errata 1441</a> updates this section as follows:</i></b><br/><pre style='margin:20px'>Throughout the document, when it says:
+
+
+a) In section 1 (2nd paragraph on pg. 2) :
+
+   This document was created by moving some of the PIM BSR-specific MIB
+|  tables from one of the earlier versions of PIM MIB [RFC5060].
+                                                          ^^^^
+
+b) 1st paragraph of Section 8  (on page 19) :
+
+   This MIB module is based on the original work in [RFC5060] by R.
+   Sivaramu, J. Lingard, and B. Joshi.
+
+
+It should say:
+
+a) In section 1 (2nd paragraph on pg. 2) :
+
+   This document was created by moving some of the PIM BSR-specific MIB
+|  tables from one of the earlier versions of the PIM MIB [RFC2934].
+|  Together with RFC 5060 [RFC5060], this document obsoletes RFC 2934.
+
+b) 1st paragraph of Section 8
+
+   This MIB module is based on the original work in [RFC2934] by K.
+   McCloghrie, D. Farinacci, D. Thaler, and B. Fenner.
+
+
+
+Notes:
+
+As explained in the body of RFC 5060, the material from RFC 2934
+has been upgraded and split into two documents, RFC 5060, and now
+RFC 5240 for the PIM-BSR functionality, in the same way as the
+PIM-BSR protocol description has been separated from the basic
+PIM protocol desciption.
+
+Unfortunately, RFC 5240 does not restate these circumstances,
+and this omission apparently has lead to an improper reference
+update during the final publication process for RFC 5240,
+erroneously replacing the references to RFC 2934 by RFC 5060.
+
+The front matter of RFC 5060 and RFC 5240 should better say:
+  Obsoletes: 2934
+and the text in the Introduction of RFC 5240 should contain
+the details as proposed in the Corrected Text.
+
+Accordingly, the *Normative* Reference [RFC5060] ought to be demoted
+to Informative, and an additional Informative Reference to RFC 2934,
+with tag [RFC2934], should have been added to Section 9.2.
+
+I suggest that, to clarify the circumstances, the RFC index metadata 
+should be updated by adding the relations
+     2934 Obsoleted by 5060
+and  2924 Obsoleted by 5240
+and the 'inverse' (Obsoletes) relations.
+
+</pre></div><pre>
+
+   This memo defines a portion of the Management Information Base (MIB)
+   for use with network management protocols in the Internet community.
+   In particular, it describes managed objects used for managing the
+   Bootstrap Router (BSR) mechanism for PIM [RFC4601], [RFC5059].
+
+   This document was created by moving some of the PIM BSR-specific MIB
+   tables from one of the earlier versions of PIM MIB [RFC5060].
+
+2.  The Internet-Standard Management Framework
+
+   For a detailed overview of the documents that describe the current
+   Internet-Standard Management Framework, please refer to section 7 of
+   RFC 3410 [RFC3410].
+
+   Managed objects are accessed via a virtual information store, termed
+   the Management Information Base or MIB.  MIB objects are generally
+   accessed through the Simple Network Management Protocol (SNMP).
+   Objects in the MIB are defined using the mechanisms defined in the
+   Structure of Management Information (SMI).  This memo specifies a MIB
+   module that is compliant to the SMIv2, which is described in STD 58,
+   RFC 2578 [RFC2578], STD 58, RFC 2579 [RFC2579] and STD 58, RFC 2580
+   [RFC2580].
+
+3.  Conventions
+
+   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
+   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+4.  Overview
+
+   This MIB module contains four tables.  The tables are:
+
+   1.  The Candidate-RP Table, which contains one row for each multicast
+       group address prefix for which the local router is configured to
+       advertise itself as a Candidate-RP (C-RP).  This table exists on
+       routers that are configured as Candidate-RP.
+
+   2.  The Elected BSR RP-Set Table, which contains one row for each
+       Group-to-RP mapping that was received in C-RP advertisements.
+       This table exists on a router that is an elected BSR (E-BSR).
+
+   3.  The Candidate-BSR Table, which contains one row for each
+       Candidate-BSR configuration for the local router.  This table
+       exists on routers that are configured as Candidate-BSR.
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 2]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   4.  The Elected-BSR Table, which contains one row for each elected
+       BSR.  This table exists on a router that is an elected BSR.
+
+   This MIB module uses textual conventions defined in the INET-ADDRESS-
+   MIB [RFC4001].
+
+5.  Definitions
+
+   PIM-BSR-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE,
+       NOTIFICATION-TYPE,
+       mib-2, Unsigned32, TimeTicks     FROM SNMPv2-SMI
+       RowStatus, TruthValue,
+       StorageType                      FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP,
+       NOTIFICATION-GROUP               FROM SNMPv2-CONF
+       InetAddressType,
+       InetAddressPrefixLength,
+       InetAddress,
+       InetZoneIndex                    FROM INET-ADDRESS-MIB;
+
+   pimBsrMIB MODULE-IDENTITY
+       LAST-UPDATED &quot;200805280000Z&quot; -- 28 May 2008
+       ORGANIZATION
+               &quot;IETF Protocol Independent Multicast (PIM) Working Group&quot;
+       CONTACT-INFO
+               &quot;Email: pim@ietf.org
+                WG charter:
+                http://www.ietf.org/html.charters/pim-charter.html&quot;
+       DESCRIPTION
+               &quot;The MIB module for management of the Bootstrap Router
+               (BSR) mechanism for PIM routers.
+
+               Copyright (C) The IETF Trust (2008).  This version
+               of this MIB module is part of RFC 5240; see the RFC
+               itself for full legal notices.&quot;
+       REVISION     &quot;200805280000Z&quot; -- 28 May 2008
+       DESCRIPTION  &quot;Initial version, published as RFC 5240.&quot;
+       ::= { mib-2 172 }
+
+   --
+   -- Top-level structure
+   --
+
+   pimBsrNotifications   OBJECT IDENTIFIER ::= { pimBsrMIB 0 }
+   pimBsrObjects         OBJECT IDENTIFIER ::= { pimBsrMIB 1 }
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 3]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   --
+   -- Conformance Information
+   --
+
+   pimBsrConformance OBJECT IDENTIFIER ::= { pimBsrMIB 2 }
+   pimBsrCompliances OBJECT IDENTIFIER ::= { pimBsrConformance 1 }
+   pimBsrGroups      OBJECT IDENTIFIER ::= { pimBsrConformance 2 }
+
+   --
+   -- The BSR Candidate-RP Table
+   --
+
+   pimBsrCandidateRPTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF PimBsrCandidateRPEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The (conceptual) table listing the IP multicast group
+               prefixes for which the local router is to advertise
+               itself as a Candidate-RP.&quot;
+       ::= { pimBsrObjects 1 }
+
+   pimBsrCandidateRPEntry OBJECT-TYPE
+       SYNTAX     PimBsrCandidateRPEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;An entry (conceptual row) in the
+                pimBsrCandidateRPTable.&quot;
+       INDEX      { pimBsrCandidateRPAddressType,
+                    pimBsrCandidateRPAddress,
+                    pimBsrCandidateRPGroupAddress,
+                    pimBsrCandidateRPGroupPrefixLength }
+       ::= { pimBsrCandidateRPTable 1 }
+
+   PimBsrCandidateRPEntry ::= SEQUENCE {
+       pimBsrCandidateRPAddressType       InetAddressType,
+       pimBsrCandidateRPAddress           InetAddress,
+       pimBsrCandidateRPGroupAddress      InetAddress,
+       pimBsrCandidateRPGroupPrefixLength InetAddressPrefixLength,
+       pimBsrCandidateRPBidir             TruthValue,
+       pimBsrCandidateRPAdvTimer          TimeTicks,
+       pimBsrCandidateRPPriority          Unsigned32,
+       pimBsrCandidateRPAdvInterval       Unsigned32,
+       pimBsrCandidateRPHoldtime          Unsigned32,
+       pimBsrCandidateRPStatus            RowStatus,
+       pimBsrCandidateRPStorageType       StorageType
+   }
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 4]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   pimBsrCandidateRPAddressType OBJECT-TYPE
+       SYNTAX     InetAddressType
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The Inet address type of the Candidate-RP.&quot;
+       ::= { pimBsrCandidateRPEntry 1 }
+
+   pimBsrCandidateRPAddress OBJECT-TYPE
+       SYNTAX     InetAddress (SIZE (4|8|16|20))
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The (unicast) address that will be advertised as a
+               Candidate-RP.  The InetAddressType is given by the
+               pimBsrCandidateRPAddressType object.&quot;
+       ::= { pimBsrCandidateRPEntry 2 }
+
+   pimBsrCandidateRPGroupAddress OBJECT-TYPE
+       SYNTAX     InetAddress (SIZE (4|8|16|20))
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The IP multicast group address that, when combined with
+               the corresponding value of
+               pimBsrCandidateRPGroupPrefixLength, identifies a group
+               prefix for which the local router will advertise itself
+               as a Candidate-RP.  The InetAddressType is given by the
+               pimBsrCandidateRPAddressType object.
+
+               This address object is only significant up to
+               pimBsrCandidateRPGroupPrefixLength bits.  The
+               remainder of the address bits are zero.  This is
+               especially important for this field, which is part of
+               the index of this entry.  Any non-zero bits would
+               signify an entirely different entry.&quot;
+       ::= { pimBsrCandidateRPEntry 3 }
+
+   pimBsrCandidateRPGroupPrefixLength OBJECT-TYPE
+       SYNTAX     InetAddressPrefixLength (4..128)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The multicast group address mask that, when combined
+               with the corresponding value of
+               pimBsrCandidateRPGroupAddress, identifies a group prefix
+               for which the local router will advertise itself as a
+               Candidate-RP.  The InetAddressType is given by the
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 5]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+               pimBsrCandidateRPAddressType object.&quot;
+       ::= { pimBsrCandidateRPEntry 4 }
+
+   pimBsrCandidateRPBidir OBJECT-TYPE
+       SYNTAX     TruthValue
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;If this object is set to TRUE, this group range is
+               advertised with this RP as a BIDIR-PIM group range.  If
+               it is set to FALSE, it is advertised as a PIM-SM group
+               range.&quot;
+       DEFVAL { false }
+       ::= { pimBsrCandidateRPEntry 5 }
+
+   pimBsrCandidateRPAdvTimer OBJECT-TYPE
+       SYNTAX     TimeTicks
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The time remaining before the local router next sends
+               a Candidate-RP-Advertisement to the elected BSR for
+               this zone.&quot;
+       ::= { pimBsrCandidateRPEntry 6 }
+
+   pimBsrCandidateRPPriority OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..255)
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The priority for this Candidate-RP advertised in
+                Candidate-RP-Advertisements.&quot;
+       REFERENCE &quot;RFC 5059, section 3.2&quot;
+       DEFVAL { 192 }
+       ::= { pimBsrCandidateRPEntry 7 }
+
+   pimBsrCandidateRPAdvInterval OBJECT-TYPE
+       SYNTAX     Unsigned32 (1..26214)
+       UNITS      &quot;seconds&quot;
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;A Candidate-RP generates Candidate-RP-Advertisements
+               periodically.  This object represents the time interval
+               in seconds between two consecutive advertisements.&quot;
+
+       REFERENCE &quot;RFC 5059, sections 3.2 and 5&quot;
+       DEFVAL { 60 }
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 6]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       ::= { pimBsrCandidateRPEntry 8 }
+
+   pimBsrCandidateRPHoldtime OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..65535)
+       UNITS      &quot;seconds&quot;
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;Holdtime for this Candidate-RP.  The amount of time (in
+               seconds) this Candidate-RP entry is valid.
+
+               This object&#39;s value can be zero only when this C-RP is
+               shutting down.&quot;
+
+       REFERENCE &quot;RFC 5059, section 4.2&quot;
+       DEFVAL { 150 }
+
+       ::= { pimBsrCandidateRPEntry 9 }
+
+   pimBsrCandidateRPStatus OBJECT-TYPE
+       SYNTAX     RowStatus
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The status of this row, by which new entries may be
+               created, or old entries deleted from this table.
+
+               This status object can be set to active(1) without
+               setting any other columnar objects in this entry.
+
+               All writable objects in this entry can be modified
+               when the status of this entry is active(1).&quot;
+
+       ::= { pimBsrCandidateRPEntry 10 }
+
+
+   pimBsrCandidateRPStorageType OBJECT-TYPE
+       SYNTAX     StorageType
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The storage type for this row.  Rows having the value
+               &#39;permanent&#39; need not allow write-access to any columnar
+               objects in the row.&quot;
+         DEFVAL { nonVolatile }
+      ::= { pimBsrCandidateRPEntry 11 }
+
+   --
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 7]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   -- The BSR Elected BSR RP-Set Table
+   --
+
+   pimBsrElectedBSRRPSetTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF PimBsrElectedBSRRPSetEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The (conceptual) table listing BSR-specific information
+               about PIM group mappings learned via C-RP advertisements
+               or created locally using configurations.  This table is
+               maintained only on the Elected BSR.
+
+               An Elected BSR uses this table to create Bootstrap
+               messages after applying a local policy to include some
+               or all of the group mappings in this table.&quot;
+
+       ::= { pimBsrObjects 2 }
+
+   pimBsrElectedBSRRPSetEntry OBJECT-TYPE
+       SYNTAX     PimBsrElectedBSRRPSetEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;An entry (conceptual row) in the
+                pimBsrElectedBSRRPSetTable.&quot;
+       INDEX      { pimBsrElectedBSRGrpMappingAddrType,
+                    pimBsrElectedBSRGrpMappingGrpAddr,
+                    pimBsrElectedBSRGrpMappingGrpPrefixLen,
+                    pimBsrElectedBSRGrpMappingRPAddr }
+       ::= { pimBsrElectedBSRRPSetTable 1 }
+
+   PimBsrElectedBSRRPSetEntry ::= SEQUENCE {
+       pimBsrElectedBSRGrpMappingAddrType      InetAddressType,
+       pimBsrElectedBSRGrpMappingGrpAddr       InetAddress,
+       pimBsrElectedBSRGrpMappingGrpPrefixLen  InetAddressPrefixLength,
+       pimBsrElectedBSRGrpMappingRPAddr        InetAddress,
+       pimBsrElectedBSRRPSetPriority           Unsigned32,
+       pimBsrElectedBSRRPSetHoldtime           Unsigned32,
+       pimBsrElectedBSRRPSetExpiryTime         TimeTicks,
+       pimBsrElectedBSRRPSetGrpBidir           TruthValue
+   }
+
+   pimBsrElectedBSRGrpMappingAddrType OBJECT-TYPE
+       SYNTAX     InetAddressType
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 8]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+               &quot;The Inet address type of the IP multicast group
+               prefix.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 2 }
+
+   pimBsrElectedBSRGrpMappingGrpAddr OBJECT-TYPE
+       SYNTAX     InetAddress (SIZE (4|8|16|20))
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The IP multicast group address that, when combined
+               with pimBsrElectedBSRGrpMappingGrpPrefixLen, gives the
+               group prefix for this mapping.  The InetAddressType is
+               given by the pimBsrElectedBSRGrpMappingAddrType object.
+
+               This address object is only significant up to
+               pimBsrElectedBSRGrpMappingGrpPrefixLen bits.  The
+               remainder of the address bits are zero.  This is
+               especially important for this field, which is part of
+               the index of this entry.  Any non-zero bits would
+               signify an entirely different entry.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 3 }
+
+   pimBsrElectedBSRGrpMappingGrpPrefixLen OBJECT-TYPE
+       SYNTAX     InetAddressPrefixLength (4..128)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The multicast group prefix length that, when combined
+               with pimBsrElectedBSRGrpMappingGrpAddr, gives the group
+               prefix for this mapping.  The InetAddressType is given by
+               the pimBsrElectedBSRGrpMappingAddrType object.  If
+               pimBsrElectedBSRGrpMappingAddrType is &#39;ipv4&#39; or &#39;ipv4z&#39;,
+               this object must be in the range 4..32.  If
+               pimBsrElectedBSRGrpMappingAddrType is &#39;ipv6&#39; or &#39;ipv6z&#39;,
+               this object must be in the range 8..128.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 4 }
+
+   pimBsrElectedBSRGrpMappingRPAddr OBJECT-TYPE
+       SYNTAX     InetAddress (SIZE (4|8|16|20))
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The IP address of the RP to be used for groups within
+               this group prefix.  The InetAddressType is given by the
+               pimBsrElectedBSRGrpMappingAddrType object.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 5 }
+
+   pimBsrElectedBSRRPSetPriority OBJECT-TYPE
+
+
+
+Joshi &amp; Bijlani             Standards Track                     [Page 9]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       SYNTAX     Unsigned32 (0..255)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The priority for RP.  Numerically higher values for
+               this object indicate lower priorities, with the value
+               zero denoting the highest priority.&quot;
+       REFERENCE &quot;RFC 5059, section 4.1&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 6 }
+
+   pimBsrElectedBSRRPSetHoldtime OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..65535)
+       UNITS      &quot;seconds&quot;
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The holdtime for RP&quot;
+       REFERENCE &quot;RFC 5059, section 4.1&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 7 }
+
+   pimBsrElectedBSRRPSetExpiryTime OBJECT-TYPE
+       SYNTAX     TimeTicks
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The minimum time remaining before this entry will be
+               aged out.  The value zero indicates that this entry will
+               never be aged out.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 8 }
+
+   pimBsrElectedBSRRPSetGrpBidir OBJECT-TYPE
+       SYNTAX     TruthValue
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;If this object is TRUE, this group range with this
+               RP is a BIDIR-PIM group range.  If it is set to FALSE,
+               it is a PIM-SM group range.&quot;
+       ::= { pimBsrElectedBSRRPSetEntry 9 }
+
+   --
+   -- The BSR Candidate-BSR Table
+   --
+
+   pimBsrCandidateBSRTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF PimBsrCandidateBSREntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 10]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       DESCRIPTION
+               &quot;The (conceptual) table containing Candidate-BSR
+               configuration for the local router.  The table contains
+               one row for each zone for which the local router is
+               to advertise itself as a Candidate-BSR.&quot;
+       ::= { pimBsrObjects 3 }
+
+   pimBsrCandidateBSREntry OBJECT-TYPE
+       SYNTAX     PimBsrCandidateBSREntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;An entry (conceptual row) in the
+               pimBsrCandidateBSRTable.&quot;
+       INDEX      { pimBsrCandidateBSRZoneIndex }
+       ::= { pimBsrCandidateBSRTable 1 }
+
+   PimBsrCandidateBSREntry ::= SEQUENCE {
+       pimBsrCandidateBSRZoneIndex        InetZoneIndex,
+       pimBsrCandidateBSRAddressType      InetAddressType,
+       pimBsrCandidateBSRAddress          InetAddress,
+       pimBsrCandidateBSRPriority         Unsigned32,
+       pimBsrCandidateBSRHashMaskLength   Unsigned32,
+       pimBsrCandidateBSRElectedBSR       TruthValue,
+       pimBsrCandidateBSRBootstrapTimer   TimeTicks,
+       pimBsrCandidateBSRStatus           RowStatus,
+       pimBsrCandidateBSRStorageType      StorageType
+   }
+
+   pimBsrCandidateBSRZoneIndex OBJECT-TYPE
+       SYNTAX     InetZoneIndex (1..4294967295)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The zone index uniquely identifies the zone on a
+               device to which this Candidate-BSR is attached.  There is
+               one entry for each zone in ipMcastZoneTable.  Scope-level
+               information for this zone can be extracted from
+               ipMcastZoneTable in IP Multicast MIB [RFC5132].
+
+               Zero is a special value used to request the default zone
+               for a given scope.  Zero is not a valid value for this
+               object.&quot;
+
+       ::= { pimBsrCandidateBSREntry 1 }
+
+   pimBsrCandidateBSRAddressType OBJECT-TYPE
+       SYNTAX     InetAddressType
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 11]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The address type of the Candidate-BSR.&quot;
+       ::= { pimBsrCandidateBSREntry 2 }
+
+   pimBsrCandidateBSRAddress OBJECT-TYPE
+       SYNTAX     InetAddress
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The (unicast) address that the local router will
+               use to advertise itself as a Candidate-BSR.  The
+               InetAddressType is given by the
+               pimBsrCandidateBSRAddressType object.&quot;
+       ::= { pimBsrCandidateBSREntry 3 }
+
+   pimBsrCandidateBSRPriority OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..255)
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The priority value for the local router as a
+               Candidate-BSR for this zone.  Numerically higher
+               values for this object indicate higher priorities.&quot;
+       DEFVAL { 0 }
+       ::= { pimBsrCandidateBSREntry 4 }
+
+   pimBsrCandidateBSRHashMaskLength OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..128)
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The hash mask length (used in the RP hash function)
+               that the local router will advertise in its Bootstrap
+               messages for this zone.  This object defaults
+               to 30 if pimBsrCandidateBSRAddressType is &#39;ipv4&#39; or
+               &#39;ipv4z&#39; , and defaults to 126 if
+               pimBsrCandidateBSRAddressType is &#39;ipv6&#39; or &#39;ipv6z&#39;.&quot;
+       ::= { pimBsrCandidateBSREntry 5 }
+
+   pimBsrCandidateBSRElectedBSR OBJECT-TYPE
+       SYNTAX     TruthValue
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;Whether the local router is the elected BSR for this
+               zone.&quot;
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 12]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       ::= { pimBsrCandidateBSREntry 6 }
+
+   pimBsrCandidateBSRBootstrapTimer OBJECT-TYPE
+       SYNTAX     TimeTicks
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The time remaining before the local router next
+               originates a Bootstrap message for this zone.
+               Value of this object is zero if
+               pimBsrCandidateBSRElectedBSR is &#39;FALSE&#39;.&quot;
+       ::= { pimBsrCandidateBSREntry 7 }
+
+   pimBsrCandidateBSRStatus OBJECT-TYPE
+       SYNTAX     RowStatus
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The status of this row, by which new entries may
+               be created or old entries deleted from this table.
+
+               This status object can be set to active(1) without
+               setting any other columnar objects in this entry.
+
+               All writable objects in this entry can be modified
+               when the status of this entry is active(1).&quot;
+       ::= { pimBsrCandidateBSREntry 8 }
+
+   pimBsrCandidateBSRStorageType OBJECT-TYPE
+       SYNTAX     StorageType
+       MAX-ACCESS read-create
+       STATUS     current
+       DESCRIPTION
+               &quot;The storage type for this row.  Rows having the value
+               &#39;permanent&#39; need not allow write-access to any columnar
+               objects in the row.&quot;
+         DEFVAL { nonVolatile }
+      ::= { pimBsrCandidateBSREntry 9 }
+
+   --
+   -- The BSR Elected-BSR Table
+   --
+
+   pimBsrElectedBSRTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF PimBsrElectedBSREntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 13]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+               &quot;The (conceptual) table containing information about
+               elected BSRs.  The table contains one row for each
+               zone for which there is an elected BSR.&quot;
+       ::= { pimBsrObjects 4 }
+
+   pimBsrElectedBSREntry OBJECT-TYPE
+       SYNTAX     PimBsrElectedBSREntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;An entry (conceptual row) in the
+                pimBsrElectedBSRTable.&quot;
+       INDEX      { pimBsrElectedBSRZoneIndex }
+       ::= { pimBsrElectedBSRTable 1 }
+
+   PimBsrElectedBSREntry ::= SEQUENCE {
+       pimBsrElectedBSRZoneIndex        InetZoneIndex,
+       pimBsrElectedBSRAddressType      InetAddressType,
+       pimBsrElectedBSRAddress          InetAddress,
+       pimBsrElectedBSRPriority         Unsigned32,
+       pimBsrElectedBSRHashMaskLength   Unsigned32,
+       pimBsrElectedBSRExpiryTime       TimeTicks
+   }
+
+   pimBsrElectedBSRZoneIndex OBJECT-TYPE
+       SYNTAX     InetZoneIndex (1..4294967295)
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               &quot;The zone index uniquely identifies the zone on a
+               device to which this Elected BSR is attached.  There
+               is one entry for each zone in ipMcastZoneTable.
+               Scope-level information for this zone can be extracted
+               from ipMcastZoneTable in IP Multicast MIB [RFC5132].
+
+               Zero is a special value used to request the default zone
+               for a given scope.  Zero is not a valid value for this
+               object.&quot;
+
+       ::= { pimBsrElectedBSREntry 1 }
+
+   pimBsrElectedBSRAddressType OBJECT-TYPE
+       SYNTAX     InetAddressType
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The address type of the elected BSR.&quot;
+       ::= { pimBsrElectedBSREntry 2 }
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 14]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   pimBsrElectedBSRAddress OBJECT-TYPE
+       SYNTAX     InetAddress (SIZE (4|8|16|20))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The (unicast) address of the elected BSR.  The
+               InetAddressType is given by the
+               pimBsrElectedBSRAddressType object.&quot;
+       ::= { pimBsrElectedBSREntry 3 }
+
+   pimBsrElectedBSRPriority OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..255)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The priority value for the elected BSR for this address
+               type.  Numerically higher values for this object indicate
+               higher priorities.&quot;
+       ::= { pimBsrElectedBSREntry 4 }
+
+   pimBsrElectedBSRHashMaskLength OBJECT-TYPE
+       SYNTAX     Unsigned32 (0..128)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The hash mask length (used in the RP hash function)
+               advertised by the elected BSR for this zone.&quot;
+       ::= { pimBsrElectedBSREntry 5 }
+
+   pimBsrElectedBSRExpiryTime OBJECT-TYPE
+       SYNTAX     TimeTicks
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               &quot;The minimum time remaining before the elected BSR for
+               this zone will be declared down.&quot;
+       ::= { pimBsrElectedBSREntry 6 }
+
+   --
+   -- PIM BSR Notifications
+   --
+
+   pimBsrElectedBSRLostElection   NOTIFICATION-TYPE
+       OBJECTS { pimBsrElectedBSRAddressType,
+                 pimBsrElectedBSRAddress,
+                 pimBsrElectedBSRPriority }
+       STATUS     current
+       DESCRIPTION
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 15]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+               &quot;A pimBsrElectedBSRLostElection notification should be
+               generated when current E-BSR lost election to a new
+               Candidate-BSR.  Only an E-BSR should generate this
+               notification.
+
+               This notification is generated when
+               pimBsrCandidateBSRElectedBSR becomes FALSE.&quot;
+
+       REFERENCE &quot;RFC 5059, section 3.1&quot;
+       ::= { pimBsrNotifications 1 }
+
+   pimBsrCandidateBSRWinElection   NOTIFICATION-TYPE
+       OBJECTS { pimBsrCandidateBSRElectedBSR }
+       STATUS     current
+       DESCRIPTION
+               &quot;A pimBsrCandidateBSRWinElection notification should be
+               generated when a C-BSR wins BSR Election.  Only an
+               E-BSR should generate this notification.
+
+               This notification is generated when
+               pimBsrCandidateBSRElectedBSR becomes TRUE.&quot;
+
+       REFERENCE &quot;RFC 5059, section 3.1&quot;
+       ::= { pimBsrNotifications 2 }
+
+   --
+   -- Compliance Statements
+   --
+
+   pimBsrCompliance MODULE-COMPLIANCE
+       STATUS  current
+       DESCRIPTION
+               &quot;The compliance statement for PIM routers that implement
+               the Bootstrap Router (BSR) mechanism.&quot;
+       MODULE  -- this module
+       MANDATORY-GROUPS { pimBsrObjectGroup }
+
+         GROUP   pimBsrDiagnosticsGroup
+         DESCRIPTION
+             &quot;This group is optional.&quot;
+
+       ::= { pimBsrCompliances 1 }
+
+   --
+   -- Units of Conformance
+   --
+
+   pimBsrObjectGroup OBJECT-GROUP
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 16]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+       OBJECTS { pimBsrCandidateRPBidir,
+                 pimBsrCandidateRPAdvTimer,
+                 pimBsrCandidateRPPriority,
+                 pimBsrCandidateRPAdvInterval,
+                 pimBsrCandidateRPHoldtime,
+                 pimBsrCandidateRPStatus,
+                 pimBsrCandidateRPStorageType,
+                 pimBsrElectedBSRRPSetPriority,
+                 pimBsrElectedBSRRPSetHoldtime,
+                 pimBsrElectedBSRRPSetExpiryTime,
+                 pimBsrElectedBSRRPSetGrpBidir,
+                 pimBsrCandidateBSRAddress,
+                 pimBsrCandidateBSRAddressType,
+                 pimBsrCandidateBSRPriority,
+                 pimBsrCandidateBSRHashMaskLength,
+                 pimBsrCandidateBSRElectedBSR,
+                 pimBsrCandidateBSRBootstrapTimer,
+                 pimBsrCandidateBSRStatus,
+                 pimBsrCandidateBSRStorageType,
+                 pimBsrElectedBSRAddress,
+                 pimBsrElectedBSRAddressType,
+                 pimBsrElectedBSRPriority,
+                 pimBsrElectedBSRHashMaskLength,
+                 pimBsrElectedBSRExpiryTime }
+       STATUS  current
+       DESCRIPTION
+               &quot;A collection of objects for managing the Bootstrap
+               Router (BSR) mechanism for PIM routers.&quot;
+       ::= { pimBsrGroups 1 }
+
+   pimBsrDiagnosticsGroup NOTIFICATION-GROUP
+       NOTIFICATIONS  { pimBsrElectedBSRLostElection,
+                        pimBsrCandidateBSRWinElection }
+       STATUS  current
+       DESCRIPTION
+               &quot;Objects providing additional diagnostics related to
+               the Bootstrap Router (BSR) mechanism for PIM routers.&quot;
+       ::= { pimBsrGroups 2 }
+
+   END
+
+6.  Security Considerations
+
+   There are a number of management objects defined in this MIB module
+   with a MAX-ACCESS clause of read-write and/or read-create.  Such
+   objects may be considered sensitive or vulnerable in some network
+   environments.  The support for SET operations in a non-secure
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 17]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   environment without proper protection can have a negative effect on
+   network operations.  These are the tables and objects and their
+   sensitivity/vulnerability:
+
+   o  A new Candidate-BSR with high priority or modification of priority
+      ( bsrCandidateBSRPriority ) of an existing Candidate-BSR can take
+      over the functionality of an Elected BSR, which can prevent and
+      disrupt the services.
+
+   o  A new Candidate-RP with lower priority or modification of priority
+      ( bsrCandidateRPPriority ) of an existing Candidate-RP can force
+      other routers to select itself for a particular group prefix.
+      This can prevent and disrupt the services provided through this
+      group prefix.
+
+   The following are the read-write and read-create objects defined in
+   this MIB module:
+
+   bsrCandidateRPBidir
+   bsrCandidateRPPriority
+   bsrCandidateRPAdvInterval
+   bsrCandidateRPHoldtime
+   bsrCandidateBSRAddressType
+   bsrCandidateBSRAddress
+   bsrCandidateBSRPriority
+   bsrCandidateBSRHashMaskLength
+
+   Some of the readable objects in this MIB module (i.e., objects with a
+   MAX-ACCESS other than not-accessible) may be considered sensitive or
+   vulnerable in some network environments.  It is thus important to
+   control even GET and/or NOTIFY access to these objects and possibly
+   to even encrypt the values of these objects when sending them over
+   the network via SNMP.  These are the tables and objects and their
+   sensitivity/vulnerability:
+
+   pimBsrCandidateRPAdvTimer
+   pimBsrElectedBSRRPSetPriority
+   pimBsrElectedBSRRPSetHoldtime
+   pimBsrElectedBSRRPSetExpiryTime
+   pimBsrElectedBSRRPSetGrpBidir
+   pimBsrCandidateBSRElectedBSR
+   pimBsrCandidateBSRBootstrapTimer
+   pimBsrElectedBSRAddressType
+   pimBsrElectedBSRAddress
+   pimBsrElectedBSRPriority
+   pimBsrElectedBSRHashMaskLength
+   pimBsrElectedBSRExpiryTime
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 18]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+   In this MIB module, possible effects that can be induced by GET
+   operations include:
+
+   o  Determination of Elected BSR, Candidate-BSRs, and Candidate-RPs in
+      the Multicast Network topology.  This information may be sensitive
+      and may be used in preparation for Denial-of-Service (DoS) attacks
+      including any of the attacks described above.
+
+   SNMP versions prior to SNMPv3 did not include adequate security.
+   Even if the network itself is secure (for example by using IPsec),
+   there is still no control over whom on the secure network is allowed
+   to access (read/change/create/delete) the objects in this MIB module.
+
+   It is RECOMMENDED that implementers consider the security features as
+   provided by the SNMPv3 framework (see [RFC3410], section 8),
+   including full support for the SNMPv3 cryptographic mechanisms (for
+   authentication and privacy).
+
+   Further, deployment of SNMP versions prior to SNMPv3 is NOT
+   RECOMMENDED.  Instead, it is RECOMMENDED to deploy SNMPv3 and to
+   enable cryptographic security.  It is then a customer/operator
+   responsibility to ensure that the SNMP entity giving access to an
+   instance of this MIB module is properly configured to give access to
+   the objects only to those principals (users) that have legitimate
+   rights to access (read/change/create/delete) them.
+
+7.  IANA Considerations
+
+   The MIB module in this document uses the following IANA-assigned
+   OBJECT IDENTIFIER values recorded in the SMI Numbers registry:
+
+   Descriptor        OBJECT IDENTIFIER value
+   ----------        -----------------------
+   pimBsrMIB         { mib-2 172 }
+
+8.  Acknowledgments
+
+   This MIB module is based on the original work in [RFC5060] by R.
+   Sivaramu, J. Lingard, and B. Joshi.
+
+   Many thanks to Bill Fenner, Stig Venaas, Nidhi Bhaskar, David
+   Mcwalter, David Harrington, and J. W. Atwood for their feedback on
+   this MIB module.
+
+   Suggested IPv6 multicast MIBs by R. Sivaramu and R. Raghunarayan have
+   been used for comparison while editing this MIB module.
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 19]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+9.  References
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 20]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+9.1.  Normative References
+
+   [RFC2119]  Bradner, S., &quot;Key words for use in RFCs to Indicate
+              Requirement Levels&quot;, BCP 14, RFC 2119, March 1997.
+
+   [RFC2578]  McCloghrie, K., Ed., Perkins, D., Ed., and J.
+              Schoenwaelder, Ed., &quot;Structure of Management Information
+              Version 2 (SMIv2)&quot;, STD 58, RFC 2578, April 1999.
+
+   [RFC2579]  McCloghrie, K., Ed., Perkins, D., Ed., and J.
+              Schoenwaelder, Ed., &quot;Textual Conventions for SMIv2&quot;,
+              STD 58, RFC 2579, April 1999.
+
+   [RFC2580]  McCloghrie, K., Perkins, D., and J. Schoenwaelder,
+              &quot;Conformance Statements for SMIv2&quot;, STD 58, RFC 2580,
+              April 1999.
+
+   [RFC4001]  Daniele, M., Haberman, B., Routhier, S., and J.
+              Schoenwaelder, &quot;Textual Conventions for Internet Network
+              Addresses&quot;, RFC 4001, February 2005.
+
+   [RFC4601]  Fenner, B., Handley, M., Holbrook, H., and I. Kouvelas,
+              &quot;Protocol Independent Multicast - Sparse Mode (PIM-SM):
+              Protocol Specification (Revised)&quot;, RFC 4601, August 2006.
+
+   [RFC5060]  Sivaramu, R., Lingard, J., McWalter, D., Joshi, B., and A.
+              Kessler, &quot;Protocol Independent Multicast MIB&quot;, RFC 5060,
+              January 2008.
+
+   [RFC5059]  Bhaskar, N., Gall, A., Lingard, J., and S. Venaas,
+              &quot;Bootstrap Router (BSR) Mechanism for Protocol Independent
+              Multicast (PIM)&quot;, RFC 5059, January 2008.
+
+   [RFC5132]  McWalter, D., Thaler, D., and A. Kessler, &quot;IP Multicast
+              MIB&quot;, RFC 5132, December 2007.
+
+9.2.  Informative References
+
+   [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
+              &quot;Introduction and Applicability Statements for Internet-
+              Standard Management Framework&quot;, RFC 3410, December 2002.
+
+
+
+
+
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 21]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+Authors&#39; Addresses
+
+   Bharat Joshi
+   Infosys Technologies Ltd.
+   44 Electronics City, Hosur Road
+   Bangalore  560 100
+   India
+
+   EMail: bharat_joshi@infosys.com
+   URI:   http://www.infosys.com/
+
+
+   Raina Bijlani
+
+   EMail: rainab@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 22]
+
+RFC 5240                      PIM BSR MIB                      June 2008
+
+
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2008).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   &quot;AS IS&quot; basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+
+
+
+
+
+
+
+
+
+
+
+Joshi &amp; Bijlani             Standards Track                    [Page 23]
+
+</pre>
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Technical <a href='https://www.rfc-editor.org/errata/eid1438'>Errata 1438</a> updates this document as follows:</i></b><br/><pre style='margin:20px'>Section 5, pg.5 says:
+
+
+   pimBsrCandidateRPGroupPrefixLength OBJECT-TYPE
+       ...
+       DESCRIPTION
+|              &quot;The multicast group address mask that, when combined
+               with the corresponding value of
+               pimBsrCandidateRPGroupAddress, identifies a group prefix
+               for which the local router will advertise itself as a
+               Candidate-RP.  [...]
+
+It should say:
+
+   pimBsrCandidateRPGroupPrefixLength OBJECT-TYPE
+       ...
+       DESCRIPTION
+|              &quot;The multicast group prefix length that, when combined
+               with the corresponding value of
+               pimBsrCandidateRPGroupAddress, identifies a group prefix
+               for which the local router will advertise itself as a
+               Candidate-RP.  [...]
+
+Notes:
+
+Missed update from legacy text!
+On page 9, the DESCRIPTION for pimBsrElectedBSRGrpMappingGrpPrefixLen
+contains the proper wording, copied to Corrected Text above.
+
+</pre></div><pre>
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Editorial <a href='https://www.rfc-editor.org/errata/eid1439'>Errata 1439</a> updates this document as follows:</i></b><br/><pre style='margin:20px'>Section 5, pg.8 says:
+
+
+-- The BSR Elected BSR RP-Set Table
+      ^^^^^
+
+It should say:
+
+-- The Elected BSR RP-Set Table
+
+Notes:
+
+Wrong/misleading SMI comment on top of page 8.
+The table name should be used consistently; cf. Section 4, item 2.
+
+</pre></div><pre>
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Editorial <a href='https://www.rfc-editor.org/errata/eid1442'>Errata 1442</a> updates this document as follows:</i></b><br/><pre style='margin:20px'>Section 5, pg.10 says:
+
+
+a)  pimBsrElectedBSRRPSetPriority
+
+       DESCRIPTION
+               &quot;The priority for RP.  [...]
+
+b)  pimBsrElectedBSRRPSetHoldtime
+
+       DESCRIPTION
+               &quot;The holdtime for RP&quot;
+
+It should say:
+
+a)  pimBsrElectedBSRRPSetPriority
+
+       DESCRIPTION
+|              &quot;The priority for this RP.  [...]
+                                 ^^^^^
+
+b)  pimBsrElectedBSRRPSetHoldtime
+
+       DESCRIPTION
+|              &quot;The holdtime for this RP.&quot;
+                                 ^^^^^  ^
+
+Notes:
+
+Clarification of context.
+
+</pre></div><pre>
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Editorial <a href='https://www.rfc-editor.org/errata/eid1443'>Errata 1443</a> updates this document as follows:</i></b><br/><pre style='margin:20px'>Section 5., pg.13 says:
+
+
+pimBsrCandidateBSRBootstrapTimer :
+
+       DESCRIPTION
+               &quot;The time remaining before the local router next
+               originates a Bootstrap message for this zone.
+               Value of this object is zero if
+               pimBsrCandidateBSRElectedBSR is 'FALSE'.&quot;
+
+
+It should say:
+
+       DESCRIPTION
+               &quot;The time remaining before the local router next
+               originates a Bootstrap message for this zone.
+|              The value of this object is zero if
+               pimBsrCandidateBSRElectedBSR is 'FALSE'.&quot;
+
+
+Notes:
+
+grammar/language improvement, uniform style.
+
+
+Furthermore, RFC 5240 unnecessarily and inadvertantly contains
+an almost blank page, pg. 20   ( Help save a tree!  :-) ).
+
+</pre></div><pre>

@@ -1,0 +1,837 @@
+<pre>
+
+
+
+
+
+
+Network Working Group                                          A. Newton
+Request for Comments: 4991                                VeriSign, Inc.
+Category: Standards Track                                    August 2007
+
+
+       A Common Schema for Internet Registry Information Service
+                           Transfer Protocols
+
+Status of This Memo
+
+   This document specifies an Internet standards track protocol for the
+   Internet community, and requests discussion and suggestions for
+   improvements.  Please refer to the current edition of the &quot;Internet
+   Official Protocol Standards&quot; (STD 1) for the standardization state
+   and status of this protocol.  Distribution of this memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The IETF Trust (2007).
+
+Abstract
+
+   This document describes an XML Schema for use by Internet Registry
+   Information Service (IRIS) application transfer protocols that share
+   common characteristics.  It describes common information about the
+   transfer protocol, such as version, supported extensions, and
+   supported security mechanisms.
+
+Table of Contents
+
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  2
+   2.  Document Terminology . . . . . . . . . . . . . . . . . . . . .  2
+   3.  Formal XML Syntax  . . . . . . . . . . . . . . . . . . . . . .  3
+   4.  Version Information  . . . . . . . . . . . . . . . . . . . . .  6
+   5.  Size Information . . . . . . . . . . . . . . . . . . . . . . .  7
+   6.  Authentication Success Information . . . . . . . . . . . . . .  8
+   7.  Authentication Failure Information . . . . . . . . . . . . . .  8
+   8.  Other Information  . . . . . . . . . . . . . . . . . . . . . .  9
+   9.  Internationalization Considerations  . . . . . . . . . . . . .  9
+   10. IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 10
+     10.1.  XML Namespace URN Registration  . . . . . . . . . . . . . 10
+   11. Security Considerations  . . . . . . . . . . . . . . . . . . . 10
+   12. References . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+     12.1.  Normative References  . . . . . . . . . . . . . . . . . . 11
+     12.2.  Informative References  . . . . . . . . . . . . . . . . . 11
+   Appendix A.  Contributors  . . . . . . . . . . . . . . . . . . . . 12
+
+
+
+
+
+Newton                      Standards Track                     [Page 1]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+1.  Introduction
+
+   IRIS [8] has two transfer protocols, LWZ (lightweight using
+   compression) [9] and XPC (XML pipelining with chunks) [10], that
+   share common negotiation mechanisms.  Both transfer protocols have a
+   need for the server to provide rich status information to clients
+   during protocol negotiation.  In many cases, this status information
+   would be too complex to describe using simple bit fields and length-
+   specified octet sequences.  This document defines an XML Schema for
+   this rich status information and describes the usage of conformant
+   XML for conveying this status information.
+
+   This document defines five types of information used in the
+   negotiation of protocol capabilities: version, size, authentication
+   success, authentication failure, and other information.  The version
+   information is used to negotiate the versions and extensions to the
+   transfer protocol, the application operations protocol, and data
+   models used by the application operations.  Size information is used
+   to indicate request and response size capabilities and errors.
+   Authentication success and failure information is used to indicate
+   the outcome of an authentication action.  Other types of information
+   may also be conveyed that is generally a result of an error but
+   cannot be corrected through defined protocol behavior.
+
+   As an example, upon initiation of a connection, a server may send
+   version information informing the client of the data models supported
+   by the server and the security mechanisms supported by the server.
+   The client may then respond appropriately.  For example, the client
+   may not recognize any of the data models supported by the server, and
+   therefore close the connection.  On the other hand, the client may
+   recognize the data models and the security mechanisms and begin the
+   procedure to initialize a security mechanism with the server before
+   proceeding to query data according to a recognized data model.
+
+   Both LWZ [9] and XPC [10] provide examples of the usage of the XML
+   Schema defined in this document.
+
+2.  Document Terminology
+
+   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
+   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
+   document are to be interpreted as described in RFC 2119 [6].
+
+
+
+
+
+
+
+
+
+Newton                      Standards Track                     [Page 2]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+3.  Formal XML Syntax
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Technical <a href='https://www.rfc-editor.org/errata/eid2285'>Errata 2285</a> updates this section as follows:</i></b><br/><br/><i><b>Old Text:</b></i><br/><pre style='margin:20px'>
+
+
+The XML Schema presented in Section 3 contains, in the lower half
+of page 4, the following type declaration:
+
+   &lt;complexType name=&quot;octetsType&quot;&gt;
+     &lt;choice&gt;
+|      &lt;element name=&quot;exceedsMaximum&quot;&gt;
+|        &lt;complexType/&gt;
+|      &lt;/element&gt;
+       &lt;element name=&quot;octets&quot; type=&quot;positiveInteger&quot; /&gt;
+     &lt;/choice&gt;
+   &lt;/complexType&gt;
+
+</pre><br/><i><b>New Text:</b></i><br/><pre style='margin:20px'>
+
+   &lt;complexType name=&quot;octetsType&quot;&gt;
+     &lt;choice&gt;
+|      &lt;element name=&quot;exceedsMaximum&quot; /&gt;
+       &lt;element name=&quot;octets&quot; type=&quot;positiveInteger&quot; /&gt;
+     &lt;/choice&gt;
+   &lt;/complexType&gt;
+
+</pre><i><b>Errata Notes: </b>
+
+Source: apps
+
+</i></div><pre>
+
+   The following is the XML Schema used to define transfer protocol
+   status information.  See the following specifications: [2], [3], [4],
+   [5].  Updates or changes to this schema require a document that
+   UPDATES or OBSOLETES this document.
+
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+   &lt;schema xmlns=&quot;http://www.w3.org/2001/XMLSchema&quot;
+           xmlns:iristrans=&quot;urn:ietf:params:xml:ns:iris-transport&quot;
+           targetNamespace=&quot;urn:ietf:params:xml:ns:iris-transport&quot;
+           elementFormDefault=&quot;qualified&quot; &gt;
+
+   &lt;annotation&gt;
+     &lt;documentation&gt;
+       A schema for describing status information
+       for use by multiple transfer protocols.
+     &lt;/documentation&gt;
+   &lt;/annotation&gt;
+
+   &lt;element name=&quot;versions&quot;&gt;
+     &lt;complexType&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;transferProtocol&quot; maxOccurs=&quot;unbounded&quot;&gt;
+           &lt;complexType&gt;
+             &lt;sequence&gt;
+               &lt;element name=&quot;application&quot; minOccurs=&quot;0&quot;
+                 maxOccurs=&quot;unbounded&quot;&gt;
+                 &lt;complexType&gt;
+                   &lt;sequence&gt;
+                     &lt;element name=&quot;dataModel&quot; minOccurs=&quot;0&quot;
+                       maxOccurs=&quot;unbounded&quot;&gt;
+                       &lt;complexType&gt;
+                         &lt;attribute name=&quot;protocolId&quot; type=&quot;token&quot;
+                           use=&quot;required&quot; /&gt;
+                         &lt;attribute name=&quot;extensionIds&quot;
+                           type=&quot;normalizedString&quot; /&gt;
+                       &lt;/complexType&gt;
+                     &lt;/element&gt;
+                   &lt;/sequence&gt;
+                   &lt;attribute name=&quot;protocolId&quot; type=&quot;token&quot;
+                     use=&quot;required&quot; /&gt;
+                   &lt;attribute name=&quot;extensionIds&quot;
+                     type=&quot;normalizedString&quot; /&gt;
+                 &lt;/complexType&gt;
+               &lt;/element&gt;
+             &lt;/sequence&gt;
+             &lt;attribute name=&quot;protocolId&quot; type=&quot;token&quot; use=&quot;required&quot;
+
+
+
+Newton                      Standards Track                     [Page 3]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+               /&gt;
+             &lt;attribute name=&quot;extensionIds&quot; type=&quot;normalizedString&quot; /&gt;
+             &lt;attribute name=&quot;authenticationIds&quot;
+               type=&quot;normalizedString&quot; /&gt;
+             &lt;attribute name=&quot;responseSizeOctets&quot;
+               type=&quot;positiveInteger&quot; /&gt;
+             &lt;attribute name=&quot;requestSizeOctets&quot;
+               type=&quot;positiveInteger&quot; /&gt;
+           &lt;/complexType&gt;
+         &lt;/element&gt;
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+   &lt;/element&gt;
+
+   &lt;element name=&quot;size&quot;&gt;
+     &lt;complexType&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;request&quot;
+           minOccurs=&quot;0&quot;
+           type=&quot;iristrans:octetsType&quot; /&gt;
+         &lt;element name=&quot;response&quot;
+           minOccurs=&quot;0&quot;
+           type=&quot;iristrans:octetsType&quot; /&gt;
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+   &lt;/element&gt;
+
+   &lt;complexType name=&quot;octetsType&quot;&gt;
+     &lt;choice&gt;
+       &lt;element name=&quot;exceedsMaximum&quot;&gt;
+         &lt;complexType/&gt;
+       &lt;/element&gt;
+       &lt;element name=&quot;octets&quot; type=&quot;positiveInteger&quot; /&gt;
+     &lt;/choice&gt;
+   &lt;/complexType&gt;
+
+   &lt;element name=&quot;authenticationSuccess&quot;&gt;
+     &lt;complexType&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;description&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;unbounded&quot;&gt;
+           &lt;complexType&gt;
+             &lt;simpleContent&gt;
+               &lt;extension base=&quot;string&quot;&gt;
+                 &lt;attribute name=&quot;language&quot; type=&quot;language&quot;
+                   use=&quot;required&quot;/&gt;
+               &lt;/extension&gt;
+             &lt;/simpleContent&gt;
+
+
+
+Newton                      Standards Track                     [Page 4]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+           &lt;/complexType&gt;
+         &lt;/element&gt;
+         &lt;element name=&quot;data&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;
+           type=&quot;base64Binary&quot;/&gt;
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+   &lt;/element&gt;
+
+   &lt;element name=&quot;authenticationFailure&quot;&gt;
+     &lt;complexType&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;description&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;unbounded&quot;&gt;
+           &lt;complexType&gt;
+             &lt;simpleContent&gt;
+               &lt;extension base=&quot;string&quot;&gt;
+                 &lt;attribute name=&quot;language&quot; type=&quot;language&quot;
+                   use=&quot;required&quot;/&gt;
+               &lt;/extension&gt;
+             &lt;/simpleContent&gt;
+           &lt;/complexType&gt;
+         &lt;/element&gt;
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+   &lt;/element&gt;
+
+   &lt;element name=&quot;other&quot;&gt;
+     &lt;complexType&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;description&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;unbounded&quot;&gt;
+           &lt;complexType&gt;
+             &lt;simpleContent&gt;
+               &lt;extension base=&quot;string&quot;&gt;
+                 &lt;attribute name=&quot;language&quot; type=&quot;language&quot;
+                   use=&quot;required&quot;/&gt;
+               &lt;/extension&gt;
+             &lt;/simpleContent&gt;
+           &lt;/complexType&gt;
+         &lt;/element&gt;
+       &lt;/sequence&gt;
+       &lt;attribute type=&quot;token&quot; name=&quot;type&quot; use=&quot;required&quot;/&gt;
+     &lt;/complexType&gt;
+   &lt;/element&gt;
+
+   &lt;/schema&gt;
+
+
+
+
+
+Newton                      Standards Track                     [Page 5]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+4.  Version Information
+
+   The &lt;versions&gt; element is used to describe version information about
+   the transfer protocol, the application protocol, and data models used
+   by the application protocol.
+
+   The &lt;versions&gt; element has one or more &lt;transferProtocol&gt; child
+   elements. &lt;transferProtocol&gt; elements have zero or more &lt;application&gt;
+   child elements.  And &lt;application&gt; elements have zero or more
+   &lt;dataModel&gt; elements.  Each of these element types has a &#39;protocolId&#39;
+   attribute identifying the protocol they represent and an optional
+   &#39;extensionIds&#39; attribute identifying the protocol extensions they
+   support.
+
+   During capabilities negotiation, it is expected that both sides of
+   the negotiation recognize the &#39;protocolId&#39; value of the
+   &lt;transferProtocol&gt; element and at least one of the &lt;application&gt; and
+   &lt;dataModel&gt; elements.  If the negotiation produces a situation where
+   this is not possible, an error SHOULD be given and communication
+   ended.  It is not expected that each side must recognize the
+   &#39;extensionIds&#39; values, and unrecognized &#39;extensionIds&#39; values MUST be
+   ignored.
+
+   Additionally, the &lt;transferProtocol&gt; element has optional
+   &#39;authenticationIds&#39;, &#39;responseSizeOctets&#39;, and &#39;requestSizeOctets&#39;
+   attributes.  The &#39;authenticationIds&#39; attribute identifies
+   authentication mechanisms supported by the associated transfer
+   protocol.  The &#39;responseSizeOctets&#39; attribute describes the maximum
+   response size in octets the server will give.  The
+   &#39;requestSizeOctets&#39; attribute describes the maximum request size in
+   octets the server will accept.
+
+   The protocol, extension, and authentication mechanism identifiers are
+   of no specific type, and this document defines none.  Specifications
+   using this XML Schema MUST define the identifiers for use with the
+   &lt;versions&gt; element and its children.
+
+   The meaning of octets for the transfer of data is counted in
+   different ways for different transfer protocols.  Some transfer
+   protocols need only to specify the octets of the data being
+   transferred, while other transfer protocols need to account for
+   additional octets used to transfer the data.  Specifications using
+   this XML Schema MUST describe how these octet counts are calculated.
+
+
+
+
+
+
+
+
+Newton                      Standards Track                     [Page 6]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+   The following is example XML describing version information.
+
+   &lt;versions xmlns=&quot;urn:ietf:params:xml:ns:iris-transport&quot;&gt;
+     &lt;transferProtocol protocolId=&quot;iris.lwz&quot;
+       authenticationIds=&quot;PLAIN EXTERNAL&quot;&gt;
+       &lt;application protocolId=&quot;urn:ietf:params:xml:ns:iris1&quot;
+         extensionIds=&quot;http://example.com/SIMPLEBAG&quot;&gt;
+         &lt;dataModel protocolId=&quot;urn:ietf:params:xml:ns:dchk1&quot;/&gt;
+         &lt;dataModel protocolId=&quot;urn:ietf:params:xml:ns:dreg1&quot;/&gt;
+       &lt;/application&gt;
+     &lt;/transferProtocol&gt;
+   &lt;/versions&gt;
+
+                        Version Information Example
+
+5.  Size Information
+
+   The &lt;size&gt; element provides a means for a server to communicate to a
+   client that a given request has exceeded a negotiated size
+   (&lt;request&gt;) or that a response to a given request will exceed a
+   negotiated size (&lt;response&gt;).
+
+   A server may indicate one of two size conditions by specifying the
+   following child elements:
+
+      &lt;exceedsMaximum&gt; - this child element simply indicates that the
+      size exceeded the negotiated size.
+
+      &lt;octets&gt; - this child element indicates that the size exceeded the
+      negotiated size and conveys the number of octets that is the
+      maximum for a request if the parent element is a &lt;request&gt; element
+      or the number of octets needed to provide the response if the
+      parent element is a &lt;response&gt; element.
+
+   The meaning of octets for the transfer of data is counted in
+   different ways for different transfer protocols.  Some transfer
+   protocols need only to specify the octets of the data being
+   transferred, while other transfer protocols need to account for
+   additional octets used to transfer the data.  Specifications using
+   this XML Schema MUST describe how these octet counts are calculated.
+
+   The following is example XML describing size information.
+
+   &lt;size xmlns=&quot;urn:ietf:params:xml:ns:iris-transport&quot;&gt;
+     &lt;response&gt;
+       &lt;octets&gt;1211&lt;/octets&gt;
+     &lt;/response&gt;
+   &lt;/size&gt;
+
+
+
+Newton                      Standards Track                     [Page 7]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+                         Size Information Example
+
+6.  Authentication Success Information
+
+   The &lt;authenticationSuccess&gt; element indicates that a client has
+   successfully authenticated to a server.  Along with this indication,
+   it can provide text that may be presented to a user with regard to
+   this successful authentication using child &lt;description&gt; elements.
+
+   Each &lt;description&gt; element MUST have a &#39;language&#39; attribute
+   describing the language of the content of the &lt;description&gt; element.
+   Clients are not expected to concatenate multiple descriptions;
+   therefore, servers MUST NOT provide multiple &lt;description&gt; elements
+   with the same language descriptor.
+
+   Finally, additional security data may be sent back with the
+   authentication success message using the &lt;data&gt; element.  The content
+   of this element is of the base64Binary simple type.
+
+   The following is example XML describing authentication success
+   information.
+
+   &lt;authenticationSuccess
+     xmlns=&quot;urn:ietf:params:xml:ns:iris-transport&quot;&gt;
+     &lt;description language=&quot;en&quot;&gt;
+       user &#39;bob&#39; authenticates via password
+     &lt;/description&gt;
+   &lt;/authenticationSuccess&gt;
+
+                      Authentication Success Example
+
+7.  Authentication Failure Information
+
+   The &lt;authenticationFailure&gt; element indicates that a client has
+   failed to properly authenticate to a server.  Along with this
+   indication, it can provide text that may be presented to a user with
+   regard to this authentication failure using child &lt;description&gt;
+   elements.
+
+   Each &lt;description&gt; element MUST have a &#39;language&#39; attribute
+   describing the language of the content of the &lt;description&gt; element.
+   Clients are not expected to concatenate multiple descriptions;
+   therefore, servers MUST NOT provide multiple &lt;description&gt; elements
+   with the same language descriptor.
+
+   The following is example XML describing authentication failure
+   information.
+
+
+
+
+Newton                      Standards Track                     [Page 8]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+   &lt;authenticationFailure
+     xmlns=&quot;urn:ietf:params:xml:ns:iris-transport&quot;&gt;
+     &lt;description language=&quot;en&quot;&gt;
+       please consult your admin if you have forgotten your password
+     &lt;/description&gt;
+   &lt;/authenticationFailure&gt;
+
+                      Authentication Failure Example
+
+8.  Other Information
+
+   The &lt;other&gt; element conveys status information that may require
+   interpretation by a human to be meaningful.  This element has a
+   required &#39;type&#39; attribute, which contains an identifier regarding the
+   nature of the information.  This document does not define any
+   identifiers for use in this attribute, but the intent is that these
+   identifiers are well-known so that clients may take different classes
+   of action based on the content of this attribute.  Therefore,
+   specifications making use of this XML Schema MUST define these
+   identifiers.
+
+   The &lt;other&gt; element may have zero or more &lt;description&gt; elements.
+   Each &lt;description&gt; element MUST have a &#39;language&#39; attribute
+   describing the language of the content of the &lt;description&gt; element.
+   Servers may use these child elements to convey textual information to
+   clients regarding the class (or type) of status information being
+   specified by the &lt;other&gt; element.  Clients are not expected to
+   concatenate multiple descriptions; therefore, servers MUST NOT
+   provide multiple &lt;description&gt; elements with the same language
+   descriptor.
+
+   The following is example XML describing other information.
+
+   &lt;other xmlns=&quot;urn:ietf:params:xml:ns:iris-transport&quot; type=&quot;system&quot;&gt;
+     &lt;description language=&quot;en&quot;&gt;unavailable, come back
+       later&lt;/description&gt;
+   &lt;/other&gt;
+
+                         Other Information Example
+
+9.  Internationalization Considerations
+
+   XML processors are obliged to recognize both UTF-8 and UTF-16 [1]
+   encodings.  XML provides for mechanisms to identify and use other
+   character encodings.  Application transfer protocols MUST define
+   which additional character encodings, if any, are to be allowed in
+   the use of the XML defined in this document.
+
+
+
+
+Newton                      Standards Track                     [Page 9]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+10.  IANA Considerations
+
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Editorial <a href='https://www.rfc-editor.org/errata/eid1011'>Errata 1011</a> updates this section as follows:</i></b><br/><pre style='margin:20px'>Section 10 says:
+
+
+Section 10 (on page 10) is confusing due to missing appropriate
+structuring, misleadingly joining the two distinct registrations.
+
+The RFC says (I have omitted blank lines in the bullets for the
+sake of better readability in the context of this message):
+
+------
+10.  IANA Considerations
+
+10.1.  XML Namespace URN Registration
+
+   This document makes use of the XML namespace and schema registry
+   specified in XML_URN [7].  Accordingly, the following registrations
+   have been made by IANA:
+
+   o  XML Namespace URN/URI:
+      *  urn:ietf:params:xml:ns:iris-transport
+
+   o  Contact:
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+      *  None
+
+   o  XML Schema URN/URI:
+      *  urn:ietf:params:xml:schema:iris-transport
+
+   o  Contact:
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+      *  The XML Schema specified in Section 3
+------
+
+Perhaps, it should better say:
+
+------
+10.  IANA Considerations
+
+   This document makes use of the XML namespace and schema registry
+   specified in XML_URN [7].  Accordingly, the following registrations
+   have been made by IANA:
+
+10.1.  XML Namespace URN Registration
+
+   o  XML Namespace URN/URI:
+      *  urn:ietf:params:xml:ns:iris-transport
+
+   o  Contact:
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+      *  None
+
+10.2.  XML Schema URN/URI Registration
+
+   o  XML Schema URN/URI:
+      *  urn:ietf:params:xml:schema:iris-transport
+
+   o  Contact:
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+      *  The XML Schema specified in Section 3
+------
+
+Furthermore, all occurrences of &quot;URN/URI&quot; might better have been
+shortened to &quot;URN&quot; there, for brevity and clarity.
+
+</pre></div><pre>
+
+10.1.  XML Namespace URN Registration
+
+   This document makes use of the XML namespace and schema registry
+   specified in XML_URN [7].  Accordingly, the following registrations
+   have been made by IANA:
+
+   o  XML Namespace URN/URI:
+
+      *  urn:ietf:params:xml:ns:iris-transport
+
+   o  Contact:
+
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+
+      *  None
+
+   o  XML Schema URN/URI:
+
+      *  urn:ietf:params:xml:schema:iris-transport
+
+   o  Contact:
+
+      *  Andrew Newton &lt;andy@hxr.us&gt;
+
+   o  XML:
+
+      *  The XML Schema specified in Section 3
+
+11.  Security Considerations
+
+   Transfer protocols using XML conformant to the XML Schema in this
+   document and offering security properties such as authentication and
+   confidentiality SHOULD offer an initial message from the server to
+   the client using the &lt;versions&gt; element.  This &lt;versions&gt; element
+   SHOULD contain all relevant authentication identifiers in its
+   &#39;authenticationId&#39; attribute.  The purpose of providing this initial
+   message is to help thwart downgrade attacks.
+
+
+
+
+
+
+
+
+
+
+Newton                      Standards Track                    [Page 10]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+12.  References
+
+12.1.  Normative References
+
+   [1]   The Unicode Consortium, &quot;The Unicode Standard, Version 3&quot;, ISBN
+         0-201-61633-5, 2000, &lt;The Unicode Standard, Version 3&gt;.
+
+   [2]   World Wide Web Consortium, &quot;Extensible Markup Language (XML)
+         1.0&quot;, W3C XML, February 1998, &lt;http://www.w3.org/TR/1998/REC-
+         xml-19980210&gt;.
+
+   [3]   World Wide Web Consortium, &quot;Namespaces in XML&quot;, W3C XML
+         Namespaces, January 1999, &lt;http://www.w3.org/TR/1999/REC-xml-
+         names-19990114&gt;.
+
+   [4]   World Wide Web Consortium, &quot;XML Schema Part 2: Datatypes&quot;, W3C
+         XML Schema, October 2004, &lt;http://www.w3.org/TR/xmlschema-2/&gt;.
+
+   [5]   World Wide Web Consortium, &quot;XML Schema Part 1: Structures&quot;, W3C
+         XML Schema, October 2004, &lt;http://www.w3.org/TR/xmlschema-1/&gt;.
+
+   [6]   Bradner, S., &quot;Key words for use in RFCs to Indicate Requirement
+         Levels&quot;, RFC 2119, BCP 14, March 1997.
+
+   [7]   Mealling, M., &quot;The IETF XML Registry&quot;, BCP 81, RFC 3688,
+         January 2004.
+
+12.2.  Informative References
+
+   [8]   Newton, A. and M. Sanz, &quot;IRIS: The Internet Registry
+         Information Service (IRIS) Core Protocol&quot;, RFC 3981, January
+         2005.
+
+   [9]   Newton, A., &quot;A Lightweight UDP Transfer Protocol for the
+         Internet Registry Information Service&quot;, RFC 4993, August 2007.
+
+   [10]  Newton, A., &quot;XML Pipelining with Chunks for the Internet
+         Registry Information Service&quot;, RFC 4992, August 2007.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Newton                      Standards Track                    [Page 11]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+Appendix A.  Contributors
+
+   Substantive contributions to this document have been provided by the
+   members of the IETF&#39;s CRISP Working Group, especially Robert
+   Martin-Legene, Milena Caires, and David Blacka.
+
+Author&#39;s Address
+
+   Andrew L. Newton
+   VeriSign, Inc.
+   21345 Ridgetop Circle
+   Sterling, VA  20166
+   USA
+
+   Phone: +1 703 948 3382
+   EMail: andy@hxr.us
+   URI:   http://www.verisignlabs.com/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Newton                      Standards Track                    [Page 12]
+
+RFC 4991       Common Schema for IRIS Transfer Protocols     August 2007
+
+
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2007).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   &quot;AS IS&quot; basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is currently provided by the
+   Internet Society.
+
+
+
+
+
+
+
+Newton                      Standards Track                    [Page 13]
+
+</pre>

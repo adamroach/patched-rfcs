@@ -1,0 +1,968 @@
+<pre>
+
+
+
+
+
+
+Network Working Group                                   H. Van de Sompel
+Request for Comments: 4452                                          LANL
+Category: Informational                                       T. Hammond
+                                                                     NPG
+                                                               E. Neylon
+                                                      Manifest Solutions
+                                                               S. Weibel
+                                                                    OCLC
+                                                              April 2006
+
+
+                         The &quot;info&quot; URI Scheme
+      for Information Assets with Identifiers in Public Namespaces
+
+Status of This Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2006).
+
+Abstract
+
+   This document defines the &quot;info&quot; Uniform Resource Identifier (URI)
+   scheme for information assets with identifiers in public namespaces.
+   Namespaces participating in the &quot;info&quot; URI scheme are regulated by an
+   &quot;info&quot; Registry mechanism.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 1]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+Table of Contents
+
+   1. Introduction ....................................................3
+      1.1. Terminology ................................................3
+      1.2. Information Assets .........................................3
+   2. Application of the &quot;info&quot; URI Scheme ............................4
+   3. The &quot;info&quot; Registry .............................................5
+      3.1. Management Characteristics of the &quot;info&quot; Registry ..........5
+      3.2. Functional Characteristics of the &quot;info&quot; Registry ..........5
+      3.3. Maintenance of the &quot;info&quot; Registry .........................6
+   4. The &quot;info&quot; URI Scheme ...........................................6
+      4.1. Definition of &quot;info&quot; URI Syntax ............................6
+      4.2. Allowed Characters Under the &quot;info&quot; URI Scheme .............8
+      4.3. Examples of &quot;info&quot; URIs ....................................9
+   5. Normalization and Comparison of &quot;info&quot; URIs ....................10
+   6. Rationale ......................................................12
+      6.1. Why Create a New URI Scheme for Identifiers from Public
+           Namespaces? ...............................................12
+      6.2. Why Not Use an Existing URI Scheme for Identifiers
+           from Public Namespaces? ...................................12
+      6.3. Why Not Create a New URN Namespace ID for
+           Identifiers from Public Namespaces? .......................12
+   7. Security Considerations ........................................13
+   8. IANA Considerations ............................................14
+   9. Acknowledgements ...............................................14
+   10. References ....................................................14
+      10.1. Normative References .....................................14
+      10.2. Informative References ...................................15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 2]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+1.  Introduction
+
+   This document defines the &quot;info&quot; Uniform Resource Identifier (URI)
+   scheme for information assets that have identifiers in public
+   namespaces but are not part of the URI allocation.  By &quot;information
+   asset&quot; this document intends any information construct that has
+   identity within a public namespace.
+
+1.1.  Terminology
+
+   In this document, the keywords &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;SHALL&quot;, &quot;SHALL
+   NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;MAY&quot;, &quot;MAY NOT&quot;, and &quot;RECOMMENDED&quot; are
+   to be interpreted as described in RFC 2119 [RFC2119] and indicate
+   requirement levels for compliant implementations.
+
+1.2.  Information Assets
+
+   There exist many information assets with identifiers in public
+   namespaces that are not referenceable by URI schemes.  Examples of
+   such namespaces include Dewey Decimal Classifications [DEWEY],
+   Library of Congress Control Numbers [LCCN], NISO Serial Item and
+   Contribution Identifiers [SICI], NASA Astrophysics Data System
+   Bibcodes [BIBCODE], and National Library of Medicine PubMed
+   identifiers [PMID].  Other candidate namespaces include Online
+   Computer Library Center OCLC Numbers [OCLCNUM] and NISO OpenURL
+   Framework identifiers [OFI].
+
+   The &quot;info&quot; URI scheme facilitates the referencing of information
+   assets that have identifiers in such public namespaces by means of
+   URIs.  When referencing an information asset by means of its &quot;info&quot;
+   URI, the asset SHALL be considered a &quot;resource&quot; as defined in RFC
+   3986 [RFC3986] and SHALL enjoy the same common syntactic, semantic,
+   and shared language benefits that the URI presentation confers.  As
+   such, the &quot;info&quot; URI scheme enables public namespaces that are not
+   part of the URI allocation to be represented within the allocation.
+   The &quot;info&quot; URI scheme thus provides a bridging mechanism to allow
+   public namespaces to become part of the URI allocation.
+
+   Namespaces declared under the &quot;info&quot; URI scheme are regulated by an
+   &quot;info&quot; Registry mechanism.  The &quot;info&quot; Registry allows a public
+   namespace that is not part of the URI allocation to be declared in a
+   registration process by the organization that manages it (the
+   Namespace Authority).  The &quot;info&quot; Registry supports the declaration
+   of public namespaces that are not part of the URI allocation in a
+   manner that facilitates the construction of URIs for information
+   assets without imposing the burdens of independent URI registration
+   and maintenance of resource representations on the Namespace
+   Authority.  Information assets identified within a registered
+
+
+
+Van de Sompel, et al.        Informational                      [Page 3]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   namespace SHALL be added or deleted according to the business
+   processes of the Namespace Authority, and yet MAY be referenced
+   within network applications via the &quot;info&quot; URI in an open,
+   standardized way without additional action on the part of the
+   Namespace Authority.
+
+   The &quot;info&quot; URI scheme exists primarily for identification purposes.
+   Implementations MUST NOT assume that an &quot;info&quot; URI can be
+   dereferenced to a representation of the resource identified by the
+   URI although Namespace Authorities MAY disclose in the registration
+   record references to service mechanisms pertaining to identifiers
+   from the registered namespace.  Applications of the &quot;info&quot; URI scheme
+   are restricted to the identification of information assets and the
+   declaration of normalization rules for comparing identifiers of such
+   information assets regardless of whether any services relating to
+   such information assets are accessible via the Internet.  References
+   to such services MAY be disclosed within an &quot;info&quot; registration
+   record, but these services SHALL NOT be regarded as authoritative.
+   The &quot;info&quot; URI scheme does not support global resolution methods.
+
+2.  Application of the &quot;info&quot; URI Scheme
+
+   Public namespaces that are used for the identification of information
+   assets and that are not part of the URI allocation MAY be registered
+   as namespaces within the &quot;info&quot; Registry.  Namespace Authorities MAY
+   register these namespaces in the &quot;info&quot; Registry, thereby making
+   these namespaces available to applications that need to reference
+   information assets by means of a URI.  Registrations of public
+   namespaces that are not part of the URI allocation by parties other
+   than the Namespace Authority SHALL NOT be permitted, thereby ensuring
+   against hostile usurpation or inappropriate usage of registered
+   service marks or the public namespaces of others.
+
+   Registration of a public namespace under the &quot;info&quot; Registry implies
+   no particular functionalities of the identifiers from the registered
+   namespace other than the identification of information assets.  No
+   resolution mechanisms can be assumed for the &quot;info&quot; URI scheme,
+   though for any particular namespace there MAY exist mechanisms for
+   resolving identifiers to network services.  The definition of such
+   services falls outside the scope of the &quot;info&quot; URI scheme.
+   Registration does not define namespace-specific semantics for
+   identifiers within a registered namespace, though allowable character
+   sets and normalization rules are specified in Sections 4 and 5 so as
+   to ensure that the URIs created using such identifiers are compliant
+   with applications that use URIs.
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 4]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   The registration of a public namespace in the &quot;info&quot; Registry SHALL
+   NOT preclude further development of services associated with that
+   namespace that MAY qualify the namespace for additional publication
+   elsewhere within the URI allocation.
+
+3.  The &quot;info&quot; Registry
+
+   The &quot;info&quot; Registry provides a mechanism for the registration of
+   public namespaces that are used for the identification of information
+   assets and that are not part of the URI allocation.
+
+   NISO [NISO], the National Information Standards Organization, will
+   act as the Maintenance Agency for the &quot;info&quot; Registry and will
+   delegate the day-to-day operation of the &quot;info&quot; Registry to a
+   Registry Operator.  As the Maintenance Agency, NISO will ensure that
+   the Registry Operator operates the &quot;info&quot; Registry in accordance with
+   a publicly articulated policy document established under NISO
+   governance and made available on the &quot;info&quot; website,
+   &lt;http://info-uri.info/&gt;.  The &quot;info&quot; Registry policy defines a review
+   process for candidate namespaces and provides measures of quality
+   control and suitability for entry of namespaces.
+
+3.1.  Management Characteristics of the &quot;info&quot; Registry
+
+   The &quot;info&quot; Registry will be managed according to policies established
+   under the auspices of NISO.  All such policies, as well as the
+   namespace declarations in the &quot;info&quot; Registry, will be public.
+
+3.2.  Functional Characteristics of the &quot;info&quot; Registry
+
+   The &quot;info&quot; Registry will be publicly accessible and will support
+   discovery (by both humans and machines) of:
+
+   o  string literals identifying the namespaces for which the Registry
+      provides a guarantee of uniqueness and persistence
+   o  names and contact information of Namespace Authorities
+   o  syntax requirements for identifiers maintained in such namespaces
+   o  normalization methodologies for identifiers maintained in such
+      namespaces
+   o  network references to a description of service mechanisms (if any)
+      for identifiers maintained in such namespaces
+   o  ancillary documentation
+
+   Registry entries refer to the corresponding &quot;namespace&quot; and
+   &quot;identifier&quot; components, which are defined in the ABNF given in
+   Section 4.1 of this document.
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 5]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+3.3.  Maintenance of the &quot;info&quot; Registry
+
+   The public namespaces that MAY be registered in the &quot;info&quot; Registry
+   will be those of interest to the communities served by NISO, and
+   therefore NISO is committed to act as Maintenance Authority for the
+   &quot;info&quot; Registry and to assign a Registry Operator to operate it.
+
+   NISO, a non-profit association accredited by the American National
+   Standards Institute (ANSI), identifies, develops, maintains, and
+   publishes technical standards to manage information in the digital
+   environment.  NISO standards apply technologies to the full range of
+   information-related needs, including retrieval, re-purposing,
+   storage, metadata, and preservation.
+
+   Founded in 1939, incorporated as a not-for-profit education
+   association in 1983, and assuming its current name the following
+   year, NISO draws its support from the communities it serves.  The
+   leaders of over 70 organizations in the fields of publishing,
+   libraries, IT, and media serve as its voting members.  Hundreds of
+   experts and practitioners serve on NISO committees and as officers of
+   the association.
+
+   NISO has been designated by ANSI to represent US interests to the
+   International Organization for Standardization&#39;s (ISO) Technical
+   Committee 46 on Information and Documentation.
+
+   The NISO headquarters office is located at 4733 Bethesda Ave.,
+   Bethesda, MD 20814, USA.  (For further information, see the NISO
+   website, &lt;http://www.niso.org/&gt;.)
+
+4.  The &quot;info&quot; URI Scheme
+
+4.1.  Definition of &quot;info&quot; URI Syntax
+
+   The &quot;info&quot; URI syntax presented in this document is conformant with
+   the generic URI syntax defined in RFC 3986 [RFC3986].  This
+   specification uses the Augmented Backus-Naur Form (ABNF) notation of
+   RFC 4234 [RFC4234] to define the URI.  The following core ABNF
+   productions are used by this specification as defined by Appendix B.1
+   of RFC 4234: ALPHA, DIGIT, HEXDIG.
+
+   The &quot;info&quot; URI syntax is presented in two parts.  Part A contains
+   productions specific to the &quot;info&quot; URI scheme, while Part B contains
+   generic productions from RFC 3986 [RFC3986], which are repeated here
+   both for completeness and for reference.  The following set of
+   productions (Part A) is specific to the &quot;info&quot; URI scheme:
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 6]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   ; Part A:
+   ; productions specific to the &quot;info&quot; URI scheme
+
+   info-URI        = info-scheme &quot;:&quot; info-identifier [ &quot;#&quot; fragment ]
+
+   info-scheme     = &quot;info&quot;
+
+   info-identifier = namespace &quot;/&quot; identifier
+
+   namespace       = scheme
+
+   identifier      = *( pchar / &quot;/&quot; )
+
+   ; Note that &quot;info&quot; URIs containing dot-segments (i.e., segments
+   ; whose full content consists of &quot;.&quot; or &quot;..&quot;) MAY NOT be suitable
+   ; for use with applications that perform dot-segment normalization
+
+   This next set of productions (Part B) are generic productions
+   reproduced from RFC 3986 [RFC3986]:
+
+   ; Part B:
+   ; generic productions from RFC 3986 [RFC3986]
+
+   scheme          = ALPHA *( ALPHA / DIGIT / &quot;+&quot; / &quot;-&quot; / &quot;.&quot; )
+
+   pchar           = unreserved / pct-encoded / sub-delims / &quot;:&quot; / &quot;@&quot;
+
+   fragment        = *( pchar / &quot;/&quot; / &quot;?&quot; )
+
+   unreserved      = ALPHA / DIGIT / &quot;-&quot; / &quot;.&quot; / &quot;_&quot; / &quot;~&quot;
+
+   pct-encoded     = &quot;%&quot; HEXDIG HEXDIG
+
+   sub-delims      = &quot;!&quot; / &quot;$&quot; / &quot;&amp;&quot; / &quot;&#39;&quot; / &quot;(&quot; / &quot;)&quot;
+                        / &quot;*&quot; / &quot;+&quot; / &quot;,&quot; / &quot;;&quot; / &quot;=&quot;
+   An &quot;info&quot; URI has an &quot;info-identifier&quot; as its scheme-specific part
+   and MAY take an optional &quot;fragment&quot; component.  An &quot;info-identifier&quot;
+   is constructed by appending an &quot;identifier&quot; component to a
+   &quot;namespace&quot; component separated by a slash &quot;/&quot; character.  The &quot;info&quot;
+   URI scheme is supportive of hierarchical processing as indicated by
+   the presence of the slash &quot;/&quot; character, although the slash &quot;/&quot;
+   character SHOULD NOT be interpreted as a strict hierarchy delimiter.
+
+   Values for the &quot;namespace&quot; component of the &quot;info&quot; URI are name
+   tokens composed of URI scheme characters only (cf. the &quot;scheme&quot;
+   production).  They identify the public namespace in which the
+   (unescaped) value for the &quot;identifier&quot; component originates, and are
+   registered in the &quot;info&quot; Registry, which guarantees their uniqueness
+
+
+
+Van de Sompel, et al.        Informational                      [Page 7]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   and persistence.  Although the &quot;namespace&quot; component is
+   case-insensitive, the canonical form is lowercase and documents that
+   specify values for the &quot;namespace&quot; component SHOULD do so using
+   lowercase letters.  An implementation SHOULD accept uppercase letters
+   as equivalent to lowercase in &quot;namespace&quot; names, for the sake of
+   robustness, but SHOULD only generate lowercase &quot;namespace&quot; names, for
+   consistency.
+
+   Values for the &quot;identifier&quot; component of the &quot;info&quot; URI MAY be viewed
+   as being hierarchical strings composed of path segments built from
+   path segment characters (cf. the &quot;pchar&quot; production), the segments
+   being separated by slash &quot;/&quot; characters, although any semantic
+   interpretation of the &quot;/&quot; character as a hierarchy delimiter MUST NOT
+   be assumed.  In their originating public namespace, the (unescaped)
+   values for the &quot;identifier&quot; component identify information assets.
+   The values for the &quot;identifier&quot; component MUST be %-escaped as
+   required by this syntax.  The &quot;identifier&quot; component SHOULD be
+   treated as case-sensitive, although the &quot;info&quot; Registry MAY record
+   the case-sensitivity of identifiers from particular registered public
+   namespaces.  The &quot;info&quot; Registry MAY also disclose additional
+   normalization rules regarding the treatment of punctuation characters
+   and the like.
+
+   Values for the &quot;fragment&quot; component of the &quot;info&quot; URI are strings
+   composed of path segment characters (cf. the &quot;pchar&quot; production) plus
+   the slash &quot;/&quot; character and the question mark &quot;?&quot; character.  No
+   semantic role is assigned to the slash &quot;/&quot; character and the question
+   mark &quot;?&quot; character within the &quot;fragment&quot; component.  The (unescaped)
+   values for the &quot;fragment&quot; component identify secondary information
+   assets with respect to the primary information asset, which is
+   referenced by the &quot;info-identifier&quot;.  The values for the &quot;fragment&quot;
+   component MUST be %-escaped as required by this syntax.  The
+   &quot;fragment&quot; component MUST be treated as being case-sensitive.
+
+4.2.  Allowed Characters Under the &quot;info&quot; URI Scheme
+
+   The &quot;info&quot; URI syntax uses the same set of allowed US-ASCII
+   characters as specified in RFC 3986 [RFC3986] for a generic URI.  An
+   &quot;info&quot; URI string SHOULD be represented as a Unicode [UNICODE] string
+   and be encoded in UTF-8 [RFC3629] form.  Reserved characters as well
+   as excluded US-ASCII characters and non-US-ASCII characters MUST be
+   %-escaped before forming the URI.  Details of the %-escape encoding
+   can be found in RFC 3986 [RFC3986], Section 2.4.
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 8]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+4.3.  Examples of &quot;info&quot; URIs
+
+   Some examples of syntactically valid &quot;info&quot; URIs are given below:
+
+       a) info:ddc/22/eng//004.678
+
+   where &quot;ddc&quot; is the &quot;namespace&quot; component for a Dewey Decimal
+   Classification [DEWEY] namespace and &quot;22/eng//004.678&quot; is the
+   &quot;identifier&quot; component for an identifier of an information asset
+   within that namespace.
+
+   The information asset identified by the identifier &quot;22/eng//004.678&quot;
+   in the namespace for (22nd Ed.)  English-language Dewey Decimal
+   Classifications is the classification
+
+       &quot;Internet&quot;
+
+
+       b) info:lccn/2002022641
+
+   where &quot;lccn&quot; is the &quot;namespace&quot; component for a Library of Congress
+   Control Number [LCCN] namespace and &quot;2002022641&quot; is the &quot;identifier&quot;
+   component for an identifier of an information asset within that
+   namespace.
+
+   The information asset identified by the identifier &quot;2002022641&quot; in
+   the namespace for Library of Congress Control Numbers is the metadata
+   record
+
+       &quot;Newcomer, Eric. Understanding Web services: XML, WSDL,
+       SOAP, and UDDI. Boston: Addison-Wesley, 2002.&quot;
+
+
+       c) info:sici/0363-0277(19950315)120:5%3C%3E1.0.TX;2-V
+
+   where &quot;sici&quot; is the &quot;namespace&quot; component for a Serial Item and
+   Contribution Identifier [SICI] namespace and
+   &quot;0363-0277(19950315)120:5%3C%3E1.0.TX;2-V&quot; is the &quot;identifier&quot;
+   component for an identifier of an information asset in that namespace
+   in %-escaped form, or in unescaped form
+   &quot;0363-0277(19950315)120:5&lt;&gt;1.0.TX;2-V&quot;.
+
+   The information asset identified by the identifier
+   &quot;0363-0277(19950315)120:5&lt;&gt;1.0.TX;2-V&quot; in the namespace for Serial
+   Item and Contribution Identifiers is the journal issue
+
+       &quot;Library Journal, Vol. 120, no. 5. March 15, 1995.&quot;
+
+
+
+
+Van de Sompel, et al.        Informational                      [Page 9]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+       d) &lt;rdf:Description about=&quot;info:bibcode/2003Icar..163..263Z&quot;/&gt;
+
+   where &quot;bibcode&quot; is the &quot;namespace&quot; component for a NASA Astrophysics
+   Data System (ADS) Bibcode [BIBCODE] namespace and
+   &quot;2003Icar..163..263Z&quot; is the &quot;identifier&quot; component for an identifier
+   of an information asset within that namespace.  This example further
+   shows an application of an &quot;info&quot; URI as the subject of a Resource
+   Description Framework (RDF) statement.
+
+   The information asset identified by the identifier
+   &quot;2003Icar..163..263Z&quot; in the namespace for NASA ADS Bibcodes is the
+   metadata record in the ADS system that describes the journal article
+
+       &quot;K. Zahnle, P. Schenk, H. Levison and L. Dones, Cratering rates
+       in the outer Solar System, Icarus, 163 (2003) pp. 263-289.&quot;
+
+
+       e) info:pmid/12376099
+
+   where &quot;pmid&quot; is the &quot;namespace&quot; component for a PubMed Identifier
+   [PMID] namespace and &quot;12376099&quot; is the &quot;identifier&quot; component for an
+   identifier of an information asset in that namespace.
+
+   The information asset identified by the identifier &quot;12376099&quot; in the
+   namespace for PubMed Identifiers is the metadata record in the PubMed
+   database that describes the journal article
+
+       &quot;Wijesuriya SD, Bristow J, Miller WL. Localization and analysis
+       of the principal promoter for human tenascin-X. Genomics. 2002
+       Oct;80(4):443-52.&quot;
+
+5.  Normalization and Comparison of &quot;info&quot; URIs
+
+   In order to facilitate comparison of &quot;info&quot; URIs, a sequence of
+   normalization steps SHOULD be applied as detailed below.  After
+   normalizing the URI strings, comparison of two &quot;info&quot; URIs is then
+   applied on a character-by-character basis as prescribed by RFC 3986
+   [RFC3986], Section 6.2.1.
+
+   The following generic normalization steps SHOULD anyway be applied by
+   applications processing &quot;info&quot; URIs:
+
+        a) Normalize the case of the &quot;scheme&quot; component to be
+           lowercase
+        b) Normalize the case of the &quot;namespace&quot; component to be
+           lowercase
+        c) Unescape all unreserved %-escaped characters in the
+           &quot;namespace&quot; and &quot;identifier&quot; components
+
+
+
+Van de Sompel, et al.        Informational                     [Page 10]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+        d) Normalize the case of any %-escaped characters in the
+           &quot;namespace&quot; and &quot;identifier&quot; components to be
+           uppercase
+
+   Further normalization steps MAY be applied by applications to &quot;info&quot;
+   URIs based on rules recorded in the &quot;info&quot; Registry for a registered
+   public namespace, but such normalization steps remain outside of the
+   scope of the &quot;info&quot; URI definition.
+
+   Since the &quot;info&quot; URI SHOULD be treated as being case-sensitive, a
+   canonical form MAY only be arrived at by consulting the &quot;info&quot;
+   Registry for possible information on the case-sensitivity for
+   identifiers from a registered public namespace, and any case
+   normalization step to apply.  The &quot;info&quot; Registry MAY also disclose
+   additional normalization rules regarding the treatment of punctuation
+   characters and the like.
+
+   In cases, however, where no single canonical form of the &quot;identifier&quot;
+   component exists, it is nevertheless RECOMMENDED that a Namespace
+   Authority nominate a preferred form, which SHOULD be used wherever
+   possible within an &quot;info&quot; URI so that applications MAY have an
+   increased chance of successful comparison of two &quot;info&quot; URIs.
+
+   Note that &quot;info&quot; URIs containing dot-segments (i.e., segments whose
+   full content consists of &quot;.&quot; or &quot;..&quot;) MAY NOT be suitable for use
+   with applications that perform dot-segment normalization.
+
+   The following unnormalized forms of an &quot;info&quot; URI
+
+       U1. INFO:PII/S0888-7543(02)96852-7
+       U2. info:PII/S0888754302968527
+       U3. info:pii/S0888%2D7543%2802%2996852%2D7
+       U4. info:pii/s0888-7543(02)96852-7
+
+   are normalized to the following respective forms
+
+       N1. info:pii/S0888-7543(02)96852-7
+       N2. info:pii/S0888754302968527
+       N3. info:pii/S0888-7543(02)96852-7
+       N4. info:pii/s0888-7543(02)96852-7
+
+   The &quot;info&quot; URI definition does not prescribe further normalization
+   steps, although applications MAY apply additional normalization steps
+   according to any rules recorded in the &quot;info&quot; Registry for a
+   registered public namespace.
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                     [Page 11]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+6.  Rationale
+
+6.1.  Why Create a New URI Scheme for Identifiers from Public
+      Namespaces?
+
+   Under RFC 4395, &quot;Guidelines and Registration Procedures for New URI
+   Schemes&quot; [RFC4395], it is stated in Section 2.1 &quot;Demonstrable, New,
+   Long-Lived Utility&quot; that &quot;New URI schemes SHOULD have clear utility
+   to the broad Internet community, beyond that available with already
+   registered URI schemes&quot;.  The &quot;info&quot; URI scheme allows identifiers
+   within public namespaces, used for the identification of information
+   assets, to be referred to within the URI allocation.  Once a
+   namespace is registered in the &quot;info&quot; Registry, the &quot;info&quot; URI scheme
+   enables an information asset with an identifier in that namespace to
+   be referenced by means of a URI.  As a result, the information asset
+   SHALL be considered a resource as defined in RFC 3986 [RFC3986] and
+   SHALL enjoy the same common syntactic, semantic, and shared language
+   benefits that the URI presentation confers.
+
+6.2.  Why Not Use an Existing URI Scheme for Identifiers from Public
+      Namespaces?
+
+   Existing URI schemes are not suitable for employment as the &quot;info&quot;
+   URI scheme admits of no global dereference mechanism.  While examples
+   of resource identifiers minted under other URI schemes MAY not always
+   be dereferenceable, nevertheless there is always a common expectation
+   that such URIs can be dereferenced by various resolution mechanisms,
+   whether they be location-dependent or location-independent resource
+   identifiers.  The &quot;info&quot; URI scheme applies to a class of resource
+   identifiers whose Namespace Authorities MAY or MAY NOT choose to
+   disclose service mechanisms.  Nevertheless, Namespace Authorities are
+   encouraged to disclose in the &quot;info&quot; registration record references
+   to any such service mechanisms in order to provide a greater utility
+   to network applications.
+
+6.3.  Why Not Create a New URN Namespace ID for Identifiers from Public
+      Namespaces?
+
+   RFC 2141 [RFC2141] states that &quot;Uniform Resource Names (URNs) are
+   intended to serve as persistent, location-independent, resource
+   identifiers&quot;.  The &quot;info&quot; URI scheme, on the other hand, does not
+   assert the persistence of the identifiers created under this scheme
+   but rather of the public namespaces grandfathered under this scheme.
+   It exists primarily to disclose the identity of information assets
+   and to facilitate a lightweight registration mechanism for public
+   namespaces of identifiers managed according to the policies and
+   business models of the Namespace Authorities.  The &quot;info&quot; URI scheme
+   is neutral with respect to identifier persistence.  Moreover, for
+
+
+
+Van de Sompel, et al.        Informational                     [Page 12]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   &quot;info&quot; to operate as a URN Network Identifier (NID) would require
+   that &quot;info&quot; be constituted as a delegated naming authority.  It is
+   not clear that a URN NID would be an appropriate choice for naming
+   authority delegation.
+
+   Further, the &quot;info&quot; URI scheme is not globally dereferenceable in
+   contrast to the specific recommendation given in RFC 1737,
+   &quot;Functional Requirements for Uniform Resource Names&quot; [RFC1737] that
+   &quot;It is strongly recommended that there be a mapping between the names
+   generated by each naming authority and URLs&quot;.  Individual Namespace
+   Authorities registered in the &quot;info&quot; Registry MAY, however, disclose
+   references to service mechanisms and are encouraged to do so.
+
+   An extra consideration is that the &quot;urn&quot; URI syntax explicitly
+   excludes generic URI hierarchy by reserving the slash &quot;/&quot; character.
+   An &quot;info&quot; URI, on the other hand, admits of hierarchical processing,
+   while remaining neutral with respect to supporting actual hierarchy,
+   and thus allows the slash &quot;/&quot; character (as well as more liberally
+   allowing the ampersand &quot;&amp;&quot; and tilde &quot;~&quot; characters).  It therefore
+   represents a lower barrier to entry for Namespace Authorities in
+   keeping with its intention of acting as a bridging mechanism to allow
+   public namespaces to become part of the URI allocation.  In sum, an
+   &quot;info&quot; URI is more widely supportive of &quot;human transcribability&quot; as
+   discussed in RFC 3986 [RFC3986] than is a &quot;urn&quot; URI.
+
+   Additionally, the &quot;urn&quot; URI syntax does not support &quot;fragment&quot;
+   components as does the &quot;info&quot; URI syntax for indirect identification
+   of secondary resources.
+
+7.  Security Considerations
+
+   The &quot;info&quot; URI scheme syntax is subject to the same security
+   considerations as the generic URI syntax described in RFC 3986
+   [RFC3986].
+
+   While some &quot;info&quot; Namespace Authorities MAY choose to disclose
+   service mechanisms, any security considerations resulting from the
+   execution of such services fall outside the scope of this document.
+   It is strongly recommended that the registration record of an &quot;info&quot;
+   namespace include any such considerations.
+
+
+
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                     [Page 13]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+8.  IANA Considerations
+
+   The IANA registry for URI schemes
+   &lt;http://www.iana.org/assignments/uri-schemes.html&gt; SHOULD be updated
+   to include an entry for the &quot;info&quot; URI scheme when the &quot;info&quot; URI
+   scheme is accepted for publication as an RFC.  This entry SHOULD
+   contain the following values:
+
+   Scheme Name: info
+
+   Description: Information Assets with Identifiers in Public
+                Namespaces
+
+   Reference: RFC 4452
+
+9.  Acknowledgements
+
+   The authors acknowledge the contributions of Michael Mealling,
+   Verisign, and Patrick Hochstenbach, Ghent University.
+
+10.  References
+
+10.1.  Normative References
+
+   [RFC1737]  Sollins, K. and L. Masinter, &quot;Functional Requirements for
+              Uniform Resource Names&quot;, RFC 1737, December 1994.
+
+   [RFC2119]  Bradner, S., &quot;Key words for use in RFCs to Indicate
+              Requirement Levels&quot;, BCP 14, RFC 2119, March 1997.
+
+   [RFC2141]  Moats, R., &quot;URN Syntax&quot;, RFC 2141, May 1997.
+
+   [RFC3629]  Yergeau, F., &quot;UTF-8, a transformation format of ISO
+              10646&quot;, STD 63, RFC 3629, November 2003.
+
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, &quot;Uniform
+              Resource Identifier (URI): Generic Syntax&quot;, STD 66,
+              RFC 3986, January 2005.
+
+   [RFC4234]  Crocker, D. and P. Overell, &quot;Augmented BNF for Syntax
+              Specifications: ABNF&quot;, RFC 4234, October 2005.
+<font color='red'><s>
+
+   [RFC4395]  Hansen, T., Hardie, T., and L. Masinter, &quot;Guidelines and
+              Registration Procedures for New URI Schemes&quot;, BCP 115, RFC
+              4395, February 2006.
+
+
+
+
+
+
+</s></font></pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>The preceding text has been updated by Editorial <a href='https://www.rfc-editor.org/errata/eid2700'>Errata 2700</a> to instead read:</i></b><pre style='margin:20px'>
+
+ [RFC4395]  Hansen, T., Hardie, T., and L. Masinter, &quot;Guidelines and
+            Registration Procedures for New URI Schemes&quot;, BCP 35, RFC
+            4395, February 2006.
+</pre><i><b>Errata Notes: </b>
+
+RFC 4395 is not BCP 115, but BCP 35
+
+</i></div><pre>
+Van de Sompel, et al.        Informational                     [Page 14]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+   [UNICODE]  The Unicode Consortium, &quot;The Unicode Standard, Version
+              4.0.0, defined by: The Unicode Standard, Version 4.0&quot;.
+              (Reading, MA, Addison-Wesley, 2003).  ISBN 0-321-18578-1.
+
+10.2.  Informative References
+
+   [BIBCODE]  &quot;NASA Astrophysics Data System Bibliographic Code&quot;,
+              &lt;http://adsdoc.harvard.edu/abs_doc/help_pages/data.html&gt;.
+
+   [DEWEY]    &quot;Dewey Decimal Classification&quot;,
+              &lt;http://www.oclc.org/dewey/&gt;.
+
+   [LCCN]     &quot;Library of Congress Control Number&quot;,
+              &lt;http://lcweb.loc.gov/marc/lccn_structure.html&gt;.
+
+   [NISO]     &quot;National Information Standards Organization&quot;,
+              &lt;http://www.niso.org/&gt;.
+
+   [OCLCNUM]  &quot;Online Computer Library Center OCLC Control Number&quot;,
+              &lt;http://www.oclc.org/bibformats/en/fixedfield/oclc.shtm&gt;.
+
+   [OFI]      &quot;ANSI/NISO Z39.88-2004, &quot;The OpenURL Framework for
+              Context-Sensitive Services&quot;, ISBN 1-880124-61-0&quot;,
+              &lt;http://www.niso.org/standards/resources/Z39_88_2004.pdf&gt;.
+
+   [PMID]     &quot;PubMed Overview&quot;, &lt;http://www.ncbi.nlm.nih.gov/entrez/
+              query/static/overview.html&gt;.
+
+   [SICI]     &quot;ANSI/NISO Z39.56-1996 (R2002), &quot;Serial Item and
+              Contribution Identifier (SICI)&quot;, ISBN 1-880124-28-9&quot;,
+              &lt;http://www.niso.org/standards/resources/Z39-56.pdf&gt;.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                     [Page 15]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+Authors&#39; Addresses
+
+   Herbert Van de Sompel
+   Los Alamos National Laboratory
+   Research Library, MS-P362
+   PO Box 1663
+   Los Alamos, NM  87545-1362
+   USA
+
+   EMail: herbertv@lanl.gov
+
+
+   Tony Hammond
+   Nature Publishing Group
+   Macmillan House
+   4 Crinan Street
+   London  N1 9XW
+   UK
+
+   EMail: t.hammond@nature.com
+
+
+   Eamonn Neylon
+   Manifest Solutions
+   Bicester, Oxfordshire  OX26 2HX
+   UK
+
+   EMail: eneylon@manifestsolutions.com
+
+
+   Stuart L. Weibel
+   OCLC Online Computer Library Center, Inc.
+   6565 Frantz Road
+   Dublin, OH  43017-3395
+   USA
+
+   EMail: weibel@oclc.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                     [Page 16]
+
+RFC 4452                 The &quot;info&quot; URI Scheme                April 2006
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2006).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   &quot;AS IS&quot; basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
+
+
+
+
+
+
+
+Van de Sompel, et al.        Informational                     [Page 17]
+
+</pre>

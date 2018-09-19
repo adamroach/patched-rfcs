@@ -1,0 +1,2736 @@
+<pre>
+
+
+
+
+
+
+Network Working Group                                          E. Gunduz
+Request for Comments: 4698                                      RIPE NCC
+Category: Standards Track                                      A. Newton
+                                                          VeriSign, Inc.
+                                                                 S. Kerr
+                                                                RIPE NCC
+                                                            October 2006
+
+
+                 IRIS: An Address Registry (areg) Type
+             for the Internet Registry Information Service
+
+Status of This Memo
+
+   This document specifies an Internet standards track protocol for the
+   Internet community, and requests discussion and suggestions for
+   improvements.  Please refer to the current edition of the &quot;Internet
+   Official Protocol Standards&quot; (STD 1) for the standardization state
+   and status of this protocol.  Distribution of this memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2006).
+
+Abstract
+
+   This document describes an IRIS registry schema for IP address and
+   Autonomous System Number information.  The schema extends the
+   necessary query and result operations of IRIS to provide the
+   functional information service needs for syntaxes and results used by
+   Internet Protocol address registries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 1]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+Table of Contents
+
+   1. Introduction ....................................................3
+   2. Document Terminology ............................................3
+   3. Schema Description ..............................................3
+      3.1. Query Derivatives ..........................................4
+           3.1.1. &lt;findContacts&gt; Query ................................4
+           3.1.2. &lt;findOrganizations&gt; .................................4
+           3.1.3. &lt;findAutonomousSystemsByName&gt; and
+                  &lt;findNetworksByName&gt; ................................5
+           3.1.4. &lt;findNetworksByAddress&gt; .............................5
+           3.1.5. &lt;findNetworksByHandle&gt; ..............................6
+           3.1.6. &lt;findASByNumber&gt; ....................................6
+           3.1.7. &lt;findByContact&gt; .....................................7
+           3.1.8. &lt;findNetworksByNameServer&gt; ..........................7
+           3.1.9. Contact Search Group ................................8
+           3.1.10. Common Search Group ................................8
+           3.1.11. Match Parameters ...................................8
+      3.2. Result Derivatives .........................................9
+           3.2.1. &lt;ipv4Network&gt; and &lt;ipv6Network&gt; Results .............9
+           3.2.2. &lt;autonomousSystem&gt; Result ..........................10
+           3.2.3. &lt;contact&gt; Result ...................................11
+           3.2.4. &lt;organization&gt; Result ..............................12
+           3.2.5. Contact References .................................12
+           3.2.6. Common Result Child Elements .......................13
+      3.3. Support for &lt;iris:lookupEntity&gt; ...........................13
+   4. Terminology for Nesting of Networks ............................14
+   5. Formal XML Syntax ..............................................18
+   6. BEEP Transport Compliance ......................................31
+      6.1. Message Pattern ...........................................31
+      6.2. Server Authentication .....................................31
+   7. URI Resolution .................................................31
+      7.1. Application Service Label .................................31
+      7.2. Operational Considerations ................................31
+      7.3. Top-Down Resolution .......................................31
+   8. Internationalization Considerations ............................32
+   9. IANA Considerations ............................................32
+   10. Security Considerations .......................................32
+   11. References ....................................................33
+      11.1. Normative References .....................................33
+      11.2. Informative References ...................................33
+   Appendix A. Privacy Considerations ................................34
+   Appendix B. Example Requests and Responses ........................34
+      B.1. Example 1 .................................................34
+      B.2. Example 2 .................................................36
+   Appendix C. Specificity Examples ..................................39
+   Appendix D. Contributors ..........................................46
+   Appendix E. Acknowledgements ......................................46
+
+
+
+Gunduz, et al.              Standards Track                     [Page 2]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+1.  Introduction
+
+   An Internet address registry stores information about:
+
+   o  address ranges
+
+   o  autonomous system number ranges
+
+   o  associated contacts and organizations
+
+   o  name servers
+
+   This information is interrelated, and Internet address registries
+   store this information and the information&#39;s interrelationships in a
+   manner befitting the needs of each Internet address registry and its
+   constituents.  This document specifies a method for accessing and
+   retrieving this information in a common XML format.
+
+   This document describes an IRIS namespace for Internet address
+   registries using an XML Schema [8] derived from and using the IRIS
+   [2] schema.  This schema and registry type are provided to
+   demonstrate the extensibility of the IRIS framework beyond the use of
+   domains, a criteria defined in CRISP [4].
+
+   The schema given is this document is specified using the Extensible
+   Markup Language (XML) 1.0 as described in XML [5], XML Schema
+   notation as described in XML_SD [7] and XML_SS [8], and XML
+   Namespaces as described in XML_NS [6].
+
+   Examples of client/server XML exchanges with this registry type are
+   available in Appendix B.
+
+2.  Document Terminology
+
+   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
+   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
+   document are to be interpreted as described in RFC 2119 [1].
+
+3.  Schema Description
+
+   IRIS requires the derivation of both query and result elements by a
+   registry schema.  Descriptions for these follow.
+
+   The descriptions contained within this section refer to XML elements
+   and attributes and their relation to the exchange of data within the
+   protocol.  These descriptions also contain specifications outside the
+   scope of the formal XML syntax.  Therefore, this section will use
+   terms defined by RFC 2119 [1] to describe the specification outside
+
+
+
+Gunduz, et al.              Standards Track                     [Page 3]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   the scope of the formal XML syntax.  While reading this section,
+   please reference Section 5 for needed details on the formal XML
+   syntax.
+
+3.1.  Query Derivatives
+
+3.1.1.  &lt;findContacts&gt; Query
+
+   &lt;findContacts&gt; searches for contacts given search constraints.
+
+   The allowable search fields are handled by one of the elements in the
+   &quot;contactSearchGroup&quot; (see Section 3.1.9) or the element
+   &lt;organizationId&gt;.  The &lt;organizationId&gt; element constrains the query
+   based on the organization ID (handle) associated with contacts.  This
+   element is an &quot;exactMatchParameter&quot; (see Section 3.1.11).
+
+   This query also provides optional &lt;language&gt; elements containing
+   language tags.  Clients MAY use these elements to give a hint about
+   the natural language(s) of the affected element.  Servers MAY use
+   this information in processing the query, such as tailoring
+   normalization routines to aid in more effective searches.
+
+   The client SHOULD pass the names unchanged to the server, and the
+   implementation of the server decides if the search is case sensitive
+   or not.
+
+3.1.2.  &lt;findOrganizations&gt;
+
+   &lt;findOrganizations&gt; searches for organizations given search
+   constraints.
+
+   The allowable search fields are handled by one of the elements in the
+   &quot;commonSearchGroup&quot; (see Section 3.1.10) or the element
+   &lt;organizationName&gt;.  This element is an
+   &quot;exactOrPartialMatchParameter&quot; (see Section 3.1.11).
+
+   This query also provides optional &lt;language&gt; elements containing
+   language tags.  Clients MAY use these elements to give a hint about
+   the natural language(s) of the affected element.  Servers MAY use
+   this information in processing the query, such as tailoring
+   normalization routines to aid in more effective searches.
+
+   The client SHOULD pass the names unchanged to the server, and the
+   implementation of the server decides if the search is case sensitive
+   or not.
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 4]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+3.1.3.  &lt;findAutonomousSystemsByName&gt; and &lt;findNetworksByName&gt;
+
+   The &lt;findAutonomousSystemsByName&gt; and &lt;findNetworksByName&gt; elements
+   allow searches by name of autonomous systems and networks,
+   respectively.  Both have the same format.
+
+   The child element &lt;name&gt; is an &quot;exactOrPartialMatchParameter&quot; (see
+   Section 3.1.11).
+
+   This query also provides optional &lt;language&gt; elements containing
+   language tags.  Clients MAY use these elements to give a hint about
+   the natural language(s) of the affected element.  Servers MAY use
+   this information in processing the query, such as tailoring
+   normalization routines to aid in more effective searches.
+
+   The client SHOULD pass the names unchanged to the server, and the
+   implementation of the server decides if the search is case sensitive
+   or not.
+
+3.1.4.  &lt;findNetworksByAddress&gt;
+
+   The &lt;findNetworksByAddress&gt; element is a query for a network given a
+   related IP address or IP address range.  It has the following child
+   elements:
+
+   o  &lt;ipv4Address&gt; - has a child &lt;start&gt; element containing the
+      starting IPv4 address of the network and an optional child of
+      &lt;end&gt; containing the ending IPv4 address of the network.  Clients
+      MUST convert any short-form notation to the fully-qualified
+      notation.
+
+   o  &lt;ipv6Address&gt; - same as &lt;ipv4Address&gt;, but the child addresses
+      contain IPv6 addresses.  Clients MUST convert any short-form
+      notation to the fully-qualified notation.
+
+   o  &lt;specificity&gt; - determines the network specificity for the search
+      (see Section 4).  Valid values are &quot;exact-match&quot;, &quot;all-less-
+      specific&quot;, &quot;one-level-less-specific&quot;, &quot;all-more-specific&quot;, and
+      &quot;one-level-more-specific&quot;.  This element may have the optional
+      attribute &#39;allowEquivalences&#39;.  When it is set to &quot;true&quot;, the
+      result set should include networks with equivalent starting and
+      ending addresses.  The default value for &#39;allowEquivalences&#39; is
+      &quot;false&quot;.
+
+   The results from this query MUST be either &lt;ipv4Network&gt; or
+   &lt;ipv6Network&gt; results.  More than one network result MAY be returned.
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 5]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+3.1.5.  &lt;findNetworksByHandle&gt;
+
+   The &lt;findNetworksByHandle&gt; element is a query for a network given a
+   the handle of a related network.  It has the following child
+   elements:
+
+   o  &lt;networkHandle&gt; - specifies the network handle.
+
+   o  &lt;specificity&gt; - determines the network specificity for the search
+      (see Section 4).  Valid values are &quot;all-less-specifics&quot;, &quot;one-
+      level-less-specifics&quot;, &quot;all-more-specifics&quot;, and &quot;one-level-more-
+      specifics&quot;.
+
+   The results from this query MUST be either &lt;ipv4Network&gt; or
+   &lt;ipv6Network&gt; results.  More than one network result MAY be returned.
+
+   This query could be used to discover the parentage relationships
+   between networks that have the same starting and ending addresses.
+
+   The client SHOULD pass handles unchanged to the server, and the
+   implementation of the server decides if the search is case sensitive
+   or not.
+
+3.1.6.  &lt;findASByNumber&gt;
+
+   The &lt;findASByNumber&gt; element allows a search for autonomous systems
+   given an autonomous system number (ASN) range.  It has the following
+   child elements:
+
+   o  &lt;asNumberStart&gt; - specifies the start of the ASN range.
+
+   o  &lt;asNumberEnd&gt; - specifies the end of the ASN range.
+
+   o  &lt;specificity&gt; - determines the range specificity for the search
+      (see Section 4).  Valid values are &quot;exact-match&quot;, &quot;all-less-
+      specific&quot;, &quot;one-level-less-specific&quot;, &quot;all-more-specific&quot;, and
+      &quot;one-level-more-specific&quot;.  This element may have the optional
+      attribute &#39;allowEquivalences&#39;.  When it is set to &quot;true&quot;, the
+      result set should include ranges with equivalent starting and
+      ending numbers.  The default value for &#39;allowEquivalences&#39; is
+      &quot;false&quot;.
+
+   The results from this query MUST be &lt;autonomousSystem&gt; results.  More
+   than one result MAY be returned.
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 6]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+3.1.7.  &lt;findByContact&gt;
+
+   The &lt;findByContact&gt; element allows a search for autonomous systems,
+   IP networks, and organizations on fields associated with that
+   entity&#39;s contact.  The optional search element &lt;returnedResultType&gt;
+   MUST restrict the results to autonomous systems, IPv4 networks, IPv6
+   networks, or organizations using the values &#39;returnASs&#39;,
+   &#39;returnIPv4Networks&#39;, &#39;returnIPv6Networks&#39;, and
+   &#39;returnOrganizations&#39;, respectively.
+
+   The allowable search fields are handled with either the
+   &lt;contactHandle&gt; element or one of the elements in the
+   &quot;contactSearchGroup&quot; (see Section 3.1.9).  The &lt;contactHandle&gt;
+   element allows for the entities to be selected based on the contact
+   having the specified contact handle, and it is an
+   &quot;exactMatchParameter&quot; type (see Section 3.1.11).  The client SHOULD
+   pass these search fields unchanged to the server, and the
+   implementation of the server decides if the search is case sensitive
+   or not.
+
+   The query MAY also be constrained further using the optional &lt;role&gt;
+   element.  The contents of this element signify the role the contact
+   has with the entity.  The allowable values for this element are
+   &quot;adminContact&quot;, &quot;nocContact&quot;, &quot;techContact&quot;, &quot;abuseContact&quot;, and
+   &quot;otherContact&quot;.
+
+   This query also provides optional &lt;language&gt; elements containing
+   language tags.  Clients MAY use these elements to give a hint about
+   the natural language(s) of the affected element.  Servers MAY use
+   this information in processing the query, such as tailoring
+   normalization routines to aid in more effective searches.
+
+   The results from this query MUST be &lt;ipv4Network&gt; results,
+   &lt;ipv6Network&gt; results, &lt;autonomousSystem&gt; results, or &lt;organization&gt;
+   results.  More than one result MAY be returned, and the results MAY
+   be of mixed types.
+
+3.1.8.  &lt;findNetworksByNameServer&gt;
+
+   The &lt;findNetworksByNameServer&gt; element allows a search for IP
+   networks based on their associated name servers.  The &lt;nameServer&gt;
+   element contains the fully qualified domain name of the name server.
+   The optional search element &lt;returnedResultType&gt; MUST restrict the
+   results to IPv4 networks or IPv6 networks using the values
+   &#39;returnIPv4Networks&#39; and &#39;returnIPv6Networks&#39;, respectively.
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 7]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   The results from this query MUST be &lt;ipv4Network&gt; or &lt;ipv6Network&gt;
+   results.  More than one result MAY be returned, and the results MAY
+   be of mixed types.
+
+3.1.9.  Contact Search Group
+
+   Some of the queries above have similar query constraints for
+   searching on contacts.  This section describes those common
+   parameters.
+
+   &lt;commonName&gt; allows the query to be constrained based on the common
+   name of the contact.  This constraint is an
+   &quot;exactOrPartialMatchParameter&quot; (see Section 3.1.11).
+
+   This group also contains all the members of the &quot;commonSearchGroup&quot;
+   (see Section 3.1.10).
+
+3.1.10.  Common Search Group
+
+   Some of the queries above have similar query constraints for
+   searching on contacts.  This section describes those common
+   parameters.
+
+   &lt;eMail&gt; constrains the query based on the e-mail address of the
+   contact.  This constraint is a &quot;domainResource&quot; type (see
+   Section 3.1.11).
+
+   The &lt;city&gt;, &lt;region&gt;, &lt;country&gt;, and &lt;postalCode&gt; elements restrict
+   the scope of the query based on the city, region, country, or postal
+   code of the contact, respectively.  These constraints are all
+   &quot;exactMatchParameter&quot; types (see Section 3.1.11).  The contents of
+   &lt;country&gt; MUST be compliant with ISO 3166 [9] two-character country
+   codes.
+
+3.1.11.  Match Parameters
+
+   Some of the queries above have constraints that match strings using
+   matching parameters.  This section describes those matching
+   parameters.
+
+   Elements of type &quot;exactMatchParameter&quot; will have one child element of
+   &lt;exactMatch&gt;.  The contents of this child element are to match
+   exactly in the use of the constraint.
+
+   Elements of type &quot;partialMatchParameter&quot; will have either a
+   &lt;beginsWith&gt; child element with an optional &lt;endsWith&gt; child element
+   or an &lt;endsWith&gt; child element.  The content of the &lt;beginsWith&gt;
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 8]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   element specifies the beginning character sequence for the
+   constraint.  The content of the &lt;endsWith&gt; element specifies the
+   ending character sequence for the constraint.
+
+   Elements of type &quot;exactOrPartialMatchParameter&quot; can have either the
+   child element allowed with the &quot;exactMatchParameter&quot; type or the
+   child elements allowed with the &quot;partialMatchParameter&quot; type.
+
+   Elements of type &quot;domainResource&quot; can have either the child element
+   allowed with the &quot;exactMatchParameter&quot; type or a child element of
+   &lt;inDomain&gt;.  This parameter type is meant to match email, SIP,
+   Extensible Messaging and Presence Protocol (XMPP), and other types of
+   &quot;user@domain&quot; addresses.  When this parameter is specified with the
+   &lt;exactMatch&gt; child element, the constraint is based on the whole
+   email address.  When this parameter is specified with the &lt;inDomain&gt;
+   child element, the constraint is based on any email address within
+   the domain given.  The &lt;inDomain&gt; MUST only contain a valid domain
+   name (i.e., no &#39;@&#39; symbol), and the matching SHOULD take place only
+   on the domain given (i.e., no partial matches with respect to
+   substrings or parent domains).
+
+3.2.  Result Derivatives
+
+3.2.1.  &lt;ipv4Network&gt; and &lt;ipv6Network&gt; Results
+
+   The &lt;ipv4Network&gt; and &lt;ipv6Network&gt; share a common definition of
+   &#39;ipNetworkType&#39;.  It has the following child elements:
+
+   o  &lt;networkHandle&gt; contains the registry-unique assigned handle for
+      this network.
+
+   o  &lt;name&gt; contains a human-friendly name for the network.
+
+   o  &lt;startAddress&gt; contains the first IP address of the network.
+
+   o  &lt;endAddress&gt; contains the last IP address of the network.
+
+   o  &lt;networkType&gt; contains a string denoting the type of network.
+
+   o  &lt;networkTypeInfo&gt; is an entity reference to a definition of the
+      values explained in a plain natural language.  The referent MUST
+      be a &lt;simpleEntity&gt; as defined by [2].
+
+   o  &lt;nameServer&gt; contains the domain name of a nameserver responsible
+      for reverse-DNS mapping for this network.
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                     [Page 9]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   o  &lt;organization&gt; contains an entity reference to the organization
+      assigned this network.  The referent MUST be an &lt;organization&gt;
+      (Section 3.2.4) result.
+
+   o  One of the following:
+
+      *  &lt;parent&gt; contains an entity reference to the parent network of
+         this network.  The referent MUST be an &lt;ipv4Network&gt;
+         (Section 3.2.1) result if this reference is a child of
+         &lt;ipv4Network&gt;.  The referent MUST be an &lt;ipv6Network&gt;
+         (Section 3.2.1) result if this reference is a child of
+         &lt;ipv6Network&gt;.
+
+      *  &lt;noParent&gt; signifies that this network has no parent network.
+
+   o  Contact references (see Section 3.2.5).
+
+   o  Common child elements (see Section 3.2.6).
+
+3.2.2.  &lt;autonomousSystem&gt; Result
+
+   The &lt;autonomousSystem&gt; element represents an assigned or allocated
+   autonomous system number range.  It has the following children:
+
+   o  &lt;asHandle&gt; contains a registry-unique assigned handle for this
+      autonomous system number range.
+
+   o  &lt;asNumberStart&gt; contains an integer indicating the starting number
+      for the autonomous system number range.
+
+   o  &lt;asNumberEnd&gt; contains an integer indicating the ending number for
+      the autonomous system number range.
+
+   o  &lt;name&gt; contains a human-readable name for this autonomous system.
+
+   o  &lt;organization&gt; contains an entity reference to the organization
+      assigned or allocated this autonomous system number range.  The
+      referent MUST be an &lt;organization&gt; (Section 3.2.4) result.
+
+   o  One of the following:
+
+      *  &lt;parent&gt; contains an entity reference to the parent autonomous
+         system of this autonomous system.  The referent MUST be an
+         &lt;autonomousSystem&gt; (Section 3.2.2) result.
+
+      *  &lt;noParent&gt; signifies that this autonomous system has no parent
+         autonomous system.
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 10]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   o  Contact references (see Section 3.2.5).
+
+   o  Common child elements (see Section 3.2.6).
+
+3.2.3.  &lt;contact&gt; Result
+
+   The &lt;contact&gt; element represents the registration of a point of
+   contact.  It has the following child elements:
+
+   o  &lt;contactHandle&gt; contains the registry-unique assigned handle for
+      this contact.
+
+   o  &lt;commonName&gt; specifies the name of the contact.
+
+   o  &lt;eMail&gt; contains the email address for this contact.
+
+   o  &lt;sip&gt; contains the sip address for this contact.
+
+   o  &lt;organization&gt; contains an entity reference to the organization
+      associated with this contact.  The referent MUST be an
+      &lt;organization&gt; (Section 3.2.4) result.
+
+   o  &lt;postalAddress&gt; contains information for reaching the contact via
+      postal mail.  It is composed of the following child elements:
+
+      *  &lt;address&gt; contains the address for this contact.
+
+      *  &lt;city&gt; contains the city where this contact is located.
+
+      *  &lt;region&gt; contains the national region where this contact is
+         located.
+
+      *  &lt;postalCode&gt; contains the postal code where this contact is
+         located.
+
+      *  &lt;country&gt; contains the country code where this contact is
+         located.  This MUST be compliant with ISO 3166 [9]
+         two-character country codes.
+
+   o  &lt;phone&gt; contains child elements describing the phone number of the
+      contact.  The child elements are &lt;number&gt;, &lt;extension&gt;, and
+      &lt;type&gt;.
+
+   o  Common child elements (see Section 3.2.6).
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 11]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+3.2.4.  &lt;organization&gt; Result
+
+   The &lt;organization&gt; element represents an organization.  It has the
+   following child elements:
+
+   o  &lt;name&gt; contains the name of the organization.
+
+   o  &lt;id&gt; contains a registry-unique identifier for this organization.
+
+   o  &lt;eMail&gt; contains the email address for this organization.
+
+   o  &lt;postalAddress&gt; contains a information for reaching the
+      organization via postal mail.  It is composed of the following
+      child elements:
+
+      *  &lt;address&gt; contains the address for this organization.
+
+      *  &lt;city&gt; contains the city where this organization is located.
+
+      *  &lt;region&gt; contains the national region where this organization
+         is located.
+
+      *  &lt;postalCode&gt; contains the postal code where this organization
+         is located.
+
+      *  &lt;country&gt; contains the country code where this organization is
+         located.  This MUST be compliant with ISO 3166 [9]
+         two-character country codes.
+
+   o  &lt;phone&gt; contains child elements describing the phone number of the
+      contact.  The child elements are &lt;number&gt;, &lt;extension&gt;, and
+      &lt;type&gt;.
+
+   o  Contact references (see Section 3.2.5).
+
+   o  Common child elements (see Section 3.2.6).
+
+3.2.5.  Contact References
+
+   The registry schema defined in Section 5 normalizes out a group of
+   elements used to reference contacts.  This group is used by many of
+   the result types for this registry.  The group has the following
+   elements, each of which may appear as many times as needed.  The
+   referent of each MUST be &lt;contact&gt; (Section 3.2.3) results.
+
+   o  &lt;adminContact&gt;
+
+   o  &lt;techContact&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 12]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   o  &lt;nocContact&gt;
+
+   o  &lt;abuseContact&gt;
+
+   o  &lt;otherContact&gt;
+
+3.2.6.  Common Result Child Elements
+
+   The registry schema defined in Section 5 normalizes out a group of
+   common elements that are used most among the result types.  The group
+   has the following elements:
+
+   o  &lt;numberResourceRegistry&gt; contains an entity reference to the
+      number resource registry of record.  The referent MUST be an
+      &lt;organization&gt; (Section 3.2.4) result.
+
+   o  &lt;registrationDate&gt; contains the date of first registration.
+
+   o  &lt;lastUpdatedDate&gt; contains the date when the registration was last
+      updated.
+
+   o  The &lt;iris:seeAlso&gt; element contains an entity reference specifying
+      an entity that is indirectly associated with this result object.
+      This element can be used for comments and remarks.
+
+3.3.  Support for &lt;iris:lookupEntity&gt;
+
+   The following types of entity classes are recognized by the
+   &lt;lookupEntity&gt; query of IRIS for this registry:
+
+   o  ipv4-handle - a registry-unique identifier specifying an IPv4
+      network.  Queries with these names will yield a &lt;ipv4Network&gt;
+      result.
+
+   o  ipv6-handle - a registry-unique identifier specifying an IPv6
+      network.  Queries with these names will yield a &lt;ipv6Network&gt;
+      result.
+
+   o  as-handle - a registry-unique identifier specifying an autonomous
+      system.  It yields a result of &lt;autonomousSystem&gt;.
+
+   o  contact-handle - a registry-unique identifier of a contact.
+      Yields a result of &lt;contact&gt;.
+
+   o  organization-id - a registry-unique identifier of an organization.
+      Yields a result of &lt;organization&gt;.
+
+   o  The entity names of these entity classes are case insensitive.
+
+
+
+Gunduz, et al.              Standards Track                    [Page 13]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+4.  Terminology for Nesting of Networks
+
+   The following terms are defined for describing the nesting of IP
+   networks.
+
+   o  More specific: Given two networks, A and B, A is more specific
+      than B if network B includes all space of network A, and if
+      network B is larger than network A.
+
+   o  Less specific: Opposite of more specific.  The network B is less
+      specific than network A if network A&#39;s space is completely
+      included in network B and if network A is smaller than network B.
+<font color='red'><s>
+
+   o  Most specific: Given a set of networks, the network or networks
+      that are more specific than zero or more specific of the other
+      networks in the set, and that are not less specific of any of the
+      networks in the set.
+
+   o  Least specific: Given a set of networks, the network or networks
+      that are not more specific to any of the other networks in the
+      set.
+
+   </s></font></pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>The preceding text has been updated by Editorial <a href='https://www.rfc-editor.org/errata/eid16'>Errata 16</a> to instead read:</i></b><pre style='margin:20px'>
+
+   o  Most specific: Given a set of networks, the network or networks
+      that are more specific than zero or more of the other networks in
+      the set, and that are not less specific than any of the networks
+      in the set.
+
+   o  Least specific: Given a set of networks, the network or networks
+      that are not more specific than any of the other networks in the
+      set.
+
+</pre><i><b>Errata Notes: </b>
+
+from pending
+
+</i></div><pre>
+Examples:
+
+   +-------------------------------------------------------+
+   |                                                       |
+   | Given the networks A, B, C, and D as follows:         |
+   |                                                       |
+   |    A    |---------------------------------|           |
+   |    B                    |-----------------|           |
+   |    C                       |---------|                |
+   |    D      |-------|                                   |
+   |                                                       |
+   |                                                       |
+   | Network A is less specific than B, C, and D.          |
+   | Network B is more specific than A.                    |
+   | Among these four networks, A is the least specific,   |
+   |   and C and D are the most specific.                  |
+   |                                                       |
+   +-------------------------------------------------------+
+
+                        Figure 1: Nesting Example 1
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 14]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   +-------------------------------------------------------+
+   |                                                       |
+   | Given networks E, F, and G:                           |
+   |                                                       |
+   |    E   |----------|                                   |
+   |    F                |--------------|                  |
+   |    G     |---|                                        |
+   |                                                       |
+   | Networks E and F are least specific networks.         |
+   | Networks F and G are most specific networks.          |
+   |                                                       |
+   +-------------------------------------------------------+
+
+                        Figure 2: Nesting Example 2
+
+   The following definitions assume that there are no overlapping
+   networks in the database.  A network overlaps with another one when
+   they encompass each other&#39;s space partially.  Examples:
+
+     A   |---------------------|
+     B       |----------------------------|
+
+                        Figure 3: Nesting Example 3
+
+   Here, networks A and B are overlapping networks because network A
+   encompasses network B&#39;s space partially, and network B encompasses
+   network A&#39;s space partially.
+
+     C   |------------------|
+     D   |---------|
+
+                        Figure 4: Nesting Example 4
+
+   Here, networks C and D are NOT overlapping networks because even if
+   network D encompasses a part of network C&#39;s space, network C does not
+   encompass network D&#39;s space partially (it encompasses network D
+   completely).
+
+   The address directory can contain more than one network with the same
+   range.  They are said to be exact match networks.
+
+   The parent/child relationship in the internet address directory is
+   unidirectional.  That is, there might also be parent/child
+   relationship with exact match networks, but a network cannot be a
+   parent and a child of its exact match network at the same time.
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 15]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   The following are nested matching searches:
+
+   (1) all less specifics search: Given a range, find all the networks
+       that contain that range (i.e., all less specifics and exact
+       matches).  These networks are the networks that fulfill the
+       following condition:
+
+   (start(network) &lt;= start(search)) AND (end(network) &gt;= end(search))
+
+   (2) one-level less specifics search: Given a range, find only the
+       most specific network that contains that range (could be multiple
+       networks, but usually single).  This is the set of networks from
+       (1), with the provision that no network in the return set is
+       contained by any other network in the set.
+<font color='red'><s>  If there are exact
+       match networks in the set from (1), they both must appear in the
+       result set.  </s></font></pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>The preceding text has been updated by Editorial <a href='https://www.rfc-editor.org/errata/eid893'>Errata 893</a> to instead read:</i></b><pre style='margin:20px'>
+
+If there are exact
+match networks in the set from (1), they all must appear in the
+result set. 
+</pre><i><b>Errata Notes: </b>
+
+from pending
+
+</i></div><pre>
+The result set may contain a network that is exact
+       match to the query range, if the search allows exact matches.
+
+       A  |-------------------------------|
+       B  |---------------------------|
+       C            |-------|
+       Query  |- - - - - - - - - -|
+
+                          Figure 5: Nesting Example 5
+
+       In the above case, the query must return B.
+
+       A  |-------------------------------|
+       B  |---------------------------|
+       C  |---------------------------|
+       D            |-------|
+       Query  |- - - - - - - - - -|
+
+                          Figure 6: Nesting Example 6
+
+       Here, the query must return B and C (they are exact matches of
+       each other).
+
+       A  |-------------------------------|
+       B  |---------------------------|
+       C  |---------------------------|
+       D            |-------|
+       Query        |- - - -|
+
+                          Figure 7: Nesting Example 7
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 16]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+       Here, the query must return B and C (they are exact matches of
+       each other).  D must not be in the result set, as it is exact
+       match to the query if the search specifies that exact matches of
+       query range should not appear in the result set.
+
+       In Figure 7, if the search specifies that exact matches to the
+       query range are allowed in the result set, then only D must be
+       returned.
+
+   (3) all more specifics search: Given a range, find all the networks
+       that are fully within that range.  The search contains a flag
+       that specifies if an exact match to the query range should appear
+       in the result set or not.  Thus, the result set may or may not
+       contain the exact match to the query range, as instructed by the
+       search.
+
+   (start(network) &gt;= start(search)) AND (end(network) &lt;= end(search))
+
+   (4) one-level more specifics search: Given a range, find only the
+       least specific networks that are fully within that range.  This
+       is the set of networks from (3), with the provision that no
+       network in the return set contains any other network in the
+       return set.
+
+       Query   |- - - - - - - - - - - - - - - - - - - - - - -|
+
+       A       |------------------|
+       B                           |-------------------------|
+       C           |--------|
+       D                                      |---------|
+
+                          Figure 8: Nesting Example 8
+
+   (5) exact match search: Given a range, find the networks that begin
+       and end on the same IP addresses as the range.  That is, the
+       networks that fulfill the following condition:
+
+   (start(network) = start(search)) AND (end(network) = end(search))
+
+   (6) Given a range, find the exact match network if it exists, and if
+       it does not, perform the (2) search.
+
+   The following are parent-child relationship searches:
+
+   (7) Given a network handle, find the network that is the direct (one
+       level up) parent of the network with the given handle.
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 17]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   (8) Given a network handle, find the network or networks that are
+       direct (one level down) children of the network with the handle
+       given.
+
+5.  Formal XML Syntax
+
+   This IP address registry is specified in the XML Schema notation.
+   The formal syntax presented here is a complete schema representation
+   suitable for automated validation of an XML instance when combined
+   with the formal schema syntax of IRIS.
+
+
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+   &lt;schema xmlns=&quot;http://www.w3.org/2001/XMLSchema&quot;
+     xmlns:areg=&quot;urn:ietf:params:xml:ns:areg1&quot;
+     xmlns:iris=&quot;urn:ietf:params:xml:ns:iris1&quot;
+     targetNamespace=&quot;urn:ietf:params:xml:ns:areg1&quot;
+     elementFormDefault=&quot;qualified&quot; &gt;
+
+     &lt;import namespace=&quot;urn:ietf:params:xml:ns:iris1&quot; /&gt;
+
+     &lt;annotation&gt;
+       &lt;documentation&gt; IP address registry schema derived from IRIS
+         schema &lt;/documentation&gt;
+     &lt;/annotation&gt;
+
+     &lt;!-- ========================================= --&gt;
+     &lt;!--                                           --&gt;
+     &lt;!-- Query Types                               --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;!-- ========================================= --&gt;
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Autonomous Systems By Name           --&gt;
+     &lt;!-- Find Networks By Name                     --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findByNameType&quot; &gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;name&quot;
+               type=&quot;areg:exactOrPartialMatchParameter&quot; /&gt;
+             &lt;element name=&quot;language&quot; type=&quot;language&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;/&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 18]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;findNetworksByName&quot; type=&quot;areg:findByNameType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+     &lt;element name=&quot;findAutonomousSystemsByName&quot;
+       type=&quot;areg:findByNameType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Address/Address Range type for            --&gt;
+     &lt;!--   Find Network                            --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;addressRangeType&quot;&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;start&quot; type=&quot;token&quot; /&gt;
+         &lt;element name=&quot;end&quot; type=&quot;token&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Networks By Address                  --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findNetworksByAddressType&quot; &gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;choice&gt;
+               &lt;element name=&quot;ipv4Address&quot; type=&quot;areg:addressRangeType&quot;
+                 /&gt;
+               &lt;element name=&quot;ipv6Address&quot; type=&quot;areg:addressRangeType&quot;
+                 /&gt;
+             &lt;/choice&gt;
+             &lt;element name=&quot;specificity&quot;&gt;
+               &lt;complexType&gt;
+                 &lt;simpleContent&gt;
+                   &lt;extension base=&quot;areg:specificityType&quot; &gt;
+                     &lt;attribute name=&quot;allowEquivalences&quot; type=&quot;boolean&quot;
+                       default=&quot;false&quot; /&gt;
+                   &lt;/extension&gt;
+                 &lt;/simpleContent&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 19]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;element name=&quot;findNetworksByAddress&quot;
+       type=&quot;areg:findNetworksByAddressType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find AS By Number                         --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findASByNumberType&quot; &gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;asNumberStart&quot; type=&quot;token&quot; /&gt;
+             &lt;element name=&quot;asNumberEnd&quot; type=&quot;token&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;specificity&quot;&gt;
+               &lt;complexType&gt;
+                 &lt;simpleContent&gt;
+                   &lt;extension base=&quot;areg:specificityType&quot; &gt;
+                     &lt;attribute name=&quot;allowEquivalences&quot; type=&quot;boolean&quot;
+                       default=&quot;false&quot; /&gt;
+                   &lt;/extension&gt;
+                 &lt;/simpleContent&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;findASByNumber&quot; type=&quot;areg:findASByNumberType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Specificity Type                          --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;simpleType name=&quot;specificityType&quot;&gt;
+       &lt;restriction base=&quot;string&quot;&gt;
+         &lt;enumeration value=&quot;exact-match&quot; /&gt;
+         &lt;enumeration value=&quot;all-less-specific&quot; /&gt;
+         &lt;enumeration value=&quot;one-level-less-specific&quot; /&gt;
+         &lt;enumeration value=&quot;all-more-specific&quot; /&gt;
+         &lt;enumeration value=&quot;one-level-more-specific&quot; /&gt;
+       &lt;/restriction&gt;
+     &lt;/simpleType&gt;
+
+     &lt;!--                                           --&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 20]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;!-- Find By Contact                           --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findByContactType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;choice&gt;
+               &lt;group ref=&quot;areg:contactSearchGroup&quot; /&gt;
+               &lt;element name=&quot;contactHandle&quot;
+                 type=&quot;areg:exactMatchParameter&quot; /&gt;
+             &lt;/choice&gt;
+             &lt;element name=&quot;returnedResultType&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; &gt;
+               &lt;simpleType&gt;
+                 &lt;restriction base=&quot;string&quot; &gt;
+                   &lt;enumeration value=&quot;returnASs&quot; /&gt;
+                   &lt;enumeration value=&quot;returnIPv4Networks&quot; /&gt;
+                   &lt;enumeration value=&quot;returnIPv6Networks&quot; /&gt;
+                   &lt;enumeration value=&quot;returnOrganizations&quot; /&gt;
+                 &lt;/restriction&gt;
+               &lt;/simpleType&gt;
+             &lt;/element&gt;
+             &lt;element name=&quot;role&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; &gt;
+               &lt;simpleType&gt;
+                 &lt;restriction base=&quot;string&quot; &gt;
+                   &lt;enumeration value=&quot;adminContact&quot; /&gt;
+                   &lt;enumeration value=&quot;techContact&quot; /&gt;
+                   &lt;enumeration value=&quot;nocContact&quot; /&gt;
+                   &lt;enumeration value=&quot;abuseContact&quot; /&gt;
+                   &lt;enumeration value=&quot;otherContact&quot; /&gt;
+                 &lt;/restriction&gt;
+               &lt;/simpleType&gt;
+             &lt;/element&gt;
+             &lt;element name=&quot;language&quot; type=&quot;language&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;/&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;findByContact&quot; type=&quot;areg:findByContactType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Networks By Handle                   --&gt;
+     &lt;!--                                           --&gt;
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 21]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;complexType name=&quot;findNetworksByHandleType&quot; &gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;networkHandle&quot; type=&quot;token&quot; /&gt;
+             &lt;element name=&quot;specificity&quot;
+               type=&quot;areg:specificitySubsetType&quot; /&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;findNetworksByHandle&quot;
+       type=&quot;areg:findNetworksByHandleType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Specificity Subtype                       --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;simpleType name=&quot;specificitySubsetType&quot;&gt;
+       &lt;restriction base=&quot;string&quot;&gt;
+         &lt;enumeration value=&quot;all-less-specific&quot; /&gt;
+         &lt;enumeration value=&quot;one-level-less-specific&quot; /&gt;
+         &lt;enumeration value=&quot;all-more-specific&quot; /&gt;
+         &lt;enumeration value=&quot;one-level-more-specific&quot; /&gt;
+       &lt;/restriction&gt;
+     &lt;/simpleType&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Contacts                             --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findContactsType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;choice&gt;
+               &lt;group ref=&quot;areg:contactSearchGroup&quot; /&gt;
+               &lt;element name=&quot;organizationId&quot;
+                 type=&quot;areg:exactMatchParameter&quot; /&gt;
+             &lt;/choice&gt;
+             &lt;element name=&quot;language&quot; type=&quot;language&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;/&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 22]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;element name=&quot;findContacts&quot; type=&quot;areg:findContactsType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Organizations                        --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findOrganizationsType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;choice&gt;
+               &lt;element name=&quot;organizationName&quot;
+                 type=&quot;areg:exactOrPartialMatchParameter&quot; /&gt;
+               &lt;group ref=&quot;areg:commonSearchGroup&quot; /&gt;
+             &lt;/choice&gt;
+             &lt;element name=&quot;language&quot; type=&quot;language&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;/&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;findOrganizations&quot; type=&quot;areg:findOrganizationsType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Find Networks by Name Server              --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;findNetworksByNameServerType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:queryType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;nameServer&quot; type=&quot;normalizedString&quot; /&gt;
+             &lt;element name=&quot;returnedResultType&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; &gt;
+               &lt;simpleType&gt;
+                 &lt;restriction base=&quot;string&quot; &gt;
+                   &lt;enumeration value=&quot;returnIPv4Networks&quot; /&gt;
+                   &lt;enumeration value=&quot;returnIPv6Networks&quot; /&gt;
+                 &lt;/restriction&gt;
+               &lt;/simpleType&gt;
+             &lt;/element&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 23]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;element name=&quot;findNetworksByNameServer&quot;
+       type=&quot;areg:findNetworksByNameServerType&quot;
+       substitutionGroup=&quot;iris:query&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Contact Search Group                      --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;group name=&quot;contactSearchGroup&quot;&gt;
+       &lt;choice&gt;
+         &lt;element name=&quot;commonName&quot;
+           type=&quot;areg:exactOrPartialMatchParameter&quot; /&gt;
+         &lt;group ref=&quot;areg:commonSearchGroup&quot; /&gt;
+       &lt;/choice&gt;
+     &lt;/group&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Common Search Group                       --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;group name=&quot;commonSearchGroup&quot;&gt;
+       &lt;choice&gt;
+         &lt;element name=&quot;eMail&quot; type=&quot;areg:domainResourceParameter&quot; /&gt;
+         &lt;element name=&quot;city&quot; type=&quot;areg:exactMatchParameter&quot; /&gt;
+         &lt;element name=&quot;region&quot; type=&quot;areg:exactMatchParameter&quot; /&gt;
+         &lt;element name=&quot;country&quot; type=&quot;areg:exactMatchParameter&quot; /&gt;
+         &lt;element name=&quot;postalCode&quot; type=&quot;areg:exactMatchParameter&quot; /&gt;
+       &lt;/choice&gt;
+     &lt;/group&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Parameters for Search Groups              --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;exactOrPartialMatchParameter&quot;&gt;
+       &lt;choice&gt;
+         &lt;group ref=&quot;areg:partialMatchGroup&quot; /&gt;
+         &lt;group ref=&quot;areg:exactMatchGroup&quot; /&gt;
+       &lt;/choice&gt;
+     &lt;/complexType&gt;
+
+     &lt;complexType name=&quot;exactMatchParameter&quot;&gt;
+       &lt;group ref=&quot;areg:exactMatchGroup&quot; /&gt;
+     &lt;/complexType&gt;
+
+     &lt;complexType name=&quot;partialMatchParameter&quot;&gt;
+       &lt;sequence&gt;
+         &lt;group ref=&quot;areg:partialMatchGroup&quot; /&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 24]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+       &lt;/sequence&gt;
+     &lt;/complexType&gt;
+
+     &lt;complexType name=&quot;domainResourceParameter&quot; &gt;
+       &lt;choice&gt;
+         &lt;group ref=&quot;areg:exactMatchGroup&quot; /&gt;
+         &lt;element name=&quot;inDomain&quot; type=&quot;token&quot; /&gt;
+       &lt;/choice&gt;
+     &lt;/complexType&gt;
+
+     &lt;group name=&quot;partialMatchGroup&quot;&gt;
+       &lt;choice&gt;
+         &lt;sequence&gt;
+           &lt;element name=&quot;beginsWith&quot;&gt;
+             &lt;simpleType&gt;
+               &lt;restriction base=&quot;token&quot;&gt;
+                 &lt;minLength value=&quot;1&quot;/&gt;
+               &lt;/restriction&gt;
+             &lt;/simpleType&gt;
+           &lt;/element&gt;
+           &lt;element minOccurs=&quot;0&quot; ref=&quot;areg:endsWith&quot;/&gt;
+         &lt;/sequence&gt;
+         &lt;element ref=&quot;areg:endsWith&quot; /&gt;
+       &lt;/choice&gt;
+     &lt;/group&gt;
+
+     &lt;element name=&quot;endsWith&quot;&gt;
+       &lt;simpleType&gt;
+         &lt;restriction base=&quot;token&quot;&gt;
+           &lt;minLength value=&quot;1&quot;/&gt;
+         &lt;/restriction&gt;
+       &lt;/simpleType&gt;
+     &lt;/element&gt;
+
+     &lt;group name=&quot;exactMatchGroup&quot;&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;exactMatch&quot; type=&quot;normalizedString&quot; /&gt;
+       &lt;/sequence&gt;
+     &lt;/group&gt;
+
+     &lt;!-- ========================================= --&gt;
+     &lt;!--                                           --&gt;
+     &lt;!-- Result Types                              --&gt;
+     &lt;!--                                           --&gt;
+     &lt;!-- ========================================= --&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- IPv4 and IPv6 Network Results             --&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 25]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;ipNetworkType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:resultType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;networkHandle&quot; type=&quot;token&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;name&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;
+               type=&quot;normalizedString&quot; /&gt;
+             &lt;element name=&quot;startAddress&quot; type=&quot;token&quot; /&gt;
+             &lt;element name=&quot;endAddress&quot; type=&quot;token&quot; /&gt;
+             &lt;sequence minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;&gt;
+               &lt;element name=&quot;networkType&quot; type=&quot;normalizedString&quot;
+                 minOccurs=&quot;1&quot; maxOccurs=&quot;1&quot; /&gt;
+               &lt;element name=&quot;networkTypeInfo&quot; type=&quot;iris:entityType&quot;
+                 minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;/sequence&gt;
+             &lt;element name=&quot;nameServer&quot; type=&quot;normalizedString&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+             &lt;element name=&quot;organization&quot; type=&quot;iris:entityType&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;choice minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; &gt;
+               &lt;element name=&quot;parent&quot; type=&quot;iris:entityType&quot; /&gt;
+               &lt;element name=&quot;noParent&quot;&gt;
+               &lt;/element&gt;
+             &lt;/choice&gt;
+             &lt;group ref=&quot;areg:contactGroup&quot; /&gt;
+             &lt;group ref=&quot;areg:commonGroup&quot; /&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;ipv4Network&quot; type=&quot;areg:ipNetworkType&quot;
+       substitutionGroup=&quot;iris:result&quot; /&gt;
+
+     &lt;element name=&quot;ipv6Network&quot; type=&quot;areg:ipNetworkType&quot;
+       substitutionGroup=&quot;iris:result&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Autonomous System                         --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;autonomousSystemType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:resultType&quot;&gt;
+           &lt;sequence&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 26]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+             &lt;element name=&quot;asHandle&quot; type=&quot;token&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;asNumberStart&quot; type=&quot;integer&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;asNumberEnd&quot; type=&quot;integer&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;name&quot; type=&quot;normalizedString&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;organization&quot; type=&quot;iris:entityType&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;choice minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;&gt;
+               &lt;element name=&quot;parent&quot; type=&quot;iris:entityType&quot; /&gt;
+               &lt;element name=&quot;noParent&quot; /&gt;
+             &lt;/choice&gt;
+             &lt;group ref=&quot;areg:contactGroup&quot; /&gt;
+             &lt;group ref=&quot;areg:commonGroup&quot; /&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;autonomousSystem&quot; type=&quot;areg:autonomousSystemType&quot;
+       substitutionGroup=&quot;iris:result&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Contact                                   --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;contactType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:resultType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;contactHandle&quot; type=&quot;token&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;commonName&quot; type=&quot;normalizedString&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;eMail&quot; type=&quot;normalizedString&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot; /&gt;
+             &lt;element name=&quot;sip&quot; type=&quot;normalizedString&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot; /&gt;
+             &lt;element name=&quot;organization&quot; type=&quot;iris:entityType&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+             &lt;element name=&quot;postalAddress&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;&gt;
+               &lt;complexType&gt;
+                 &lt;sequence&gt;
+                   &lt;element name=&quot;address&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 27]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+                   &lt;element name=&quot;city&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;region&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;postalCode&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;country&quot; type=&quot;token&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                 &lt;/sequence&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+             &lt;element name=&quot;phone&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; &gt;
+               &lt;complexType&gt;
+                 &lt;sequence&gt;
+                   &lt;element name=&quot;number&quot; type=&quot;normalizedString&quot; /&gt;
+                   &lt;element name=&quot;extension&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+                   &lt;element name=&quot;type&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+                 &lt;/sequence&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+             &lt;group ref=&quot;areg:commonGroup&quot; /&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;contact&quot; type=&quot;areg:contactType&quot;
+       substitutionGroup=&quot;iris:result&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Organization                              --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;complexType name=&quot;organizationType&quot;&gt;
+       &lt;complexContent&gt;
+         &lt;extension base=&quot;iris:resultType&quot;&gt;
+           &lt;sequence&gt;
+             &lt;element name=&quot;name&quot; type=&quot;normalizedString&quot;
+               minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+             &lt;element name=&quot;eMail&quot; type=&quot;normalizedString&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot; /&gt;
+             &lt;element name=&quot;id&quot; type=&quot;token&quot; /&gt;
+             &lt;element name=&quot;postalAddress&quot; minOccurs=&quot;0&quot;
+               maxOccurs=&quot;unbounded&quot;&gt;
+               &lt;complexType&gt;
+                 &lt;sequence&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 28]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+                   &lt;element name=&quot;address&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;city&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;region&quot; type=&quot;string&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;postalCode&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+                   &lt;element name=&quot;country&quot; type=&quot;token&quot; minOccurs=&quot;0&quot;
+                     maxOccurs=&quot;1&quot; /&gt;
+                 &lt;/sequence&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+             &lt;element name=&quot;phone&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; &gt;
+               &lt;complexType&gt;
+                 &lt;sequence&gt;
+                   &lt;element name=&quot;number&quot; type=&quot;normalizedString&quot; /&gt;
+                   &lt;element name=&quot;extension&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+                   &lt;element name=&quot;type&quot; type=&quot;normalizedString&quot;
+                     minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+                 &lt;/sequence&gt;
+               &lt;/complexType&gt;
+             &lt;/element&gt;
+             &lt;group ref=&quot;areg:contactGroup&quot; /&gt;
+             &lt;group ref=&quot;areg:commonGroup&quot; /&gt;
+           &lt;/sequence&gt;
+         &lt;/extension&gt;
+       &lt;/complexContent&gt;
+     &lt;/complexType&gt;
+
+     &lt;element name=&quot;organization&quot; type=&quot;areg:organizationType&quot;
+       substitutionGroup=&quot;iris:result&quot; /&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Contact Group                             --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;group name=&quot;contactGroup&quot;&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;adminContact&quot; type=&quot;iris:entityType&quot;
+           minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+         &lt;element name=&quot;techContact&quot; type=&quot;iris:entityType&quot;
+           minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+         &lt;element name=&quot;nocContact&quot; type=&quot;iris:entityType&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;unbounded&quot; /&gt;
+         &lt;element name=&quot;abuseContact&quot; type=&quot;iris:entityType&quot;
+           minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 29]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+         &lt;element name=&quot;otherContact&quot; type=&quot;iris:entityType&quot;
+           minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot; /&gt;
+       &lt;/sequence&gt;
+     &lt;/group&gt;
+
+     &lt;!--                                           --&gt;
+     &lt;!-- Common Group                              --&gt;
+     &lt;!--                                           --&gt;
+
+     &lt;group name=&quot;commonGroup&quot;&gt;
+       &lt;sequence&gt;
+         &lt;element name=&quot;numberResourceRegistry&quot; type=&quot;iris:entityType&quot;
+           minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot; /&gt;
+         &lt;element name=&quot;registrationDate&quot; type=&quot;dateTime&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;1&quot; /&gt;
+         &lt;element name=&quot;lastUpdatedDate&quot; type=&quot;dateTime&quot; minOccurs=&quot;0&quot;
+           maxOccurs=&quot;1&quot; /&gt;
+         &lt;element ref=&quot;iris:seeAlso&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;
+           /&gt;
+       &lt;/sequence&gt;
+     &lt;/group&gt;
+   &lt;/schema&gt;
+
+                                 Figure 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 30]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+6.  BEEP Transport Compliance
+
+   IRIS allows several extensions of the core capabilities.  This
+   section outlines those extensions allowable by IRIS-BEEP [3].
+
+6.1.  Message Pattern
+
+   This registry type uses the default message pattern as described in
+   IRIS-BEEP [3].
+
+6.2.  Server Authentication
+
+   This registry type uses the default server authentication method as
+   described in IRIS-BEEP [3].
+
+7.  URI Resolution
+
+7.1.  Application Service Label
+
+   See Section 9 for the application service label registration.
+
+7.2.  Operational Considerations
+
+   Address registries do not have natural links to DNS.
+<font color='red'><s>  Using reverse
+   DNS tree presents problems for IP address delegation (for example,
+   delegations do not fall into byte boundaries, unlike reverse DNS),
+   and DNS does not currently contain any information regarding
+   autonomous system delegation.
+
+   </s></font></pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>The preceding text has been updated by Editorial <a href='https://www.rfc-editor.org/errata/eid894'>Errata 894</a> to instead read:</i></b><pre style='margin:20px'>
+
+   Using the reverse
+   DNS tree presents problems for IP address delegation (for example,
+   delegations do not fall into byte boundaries, unlike reverse DNS),
+   and DNS does not currently contain any information regarding
+   autonomous system delegation.
+</pre><i><b>Errata Notes: </b>
+
+missing article
+
+Source: apps
+
+</i></div><pre>
+Therefore, in order for the top-down resolution to operate properly,
+   it is requested that the IAB instruct IANA to insert and maintain a
+   NAPTR DNS resource record for areg.iris.arpa, as described in
+   Section 9.
+
+7.3.  Top-Down Resolution
+
+   The top-down alternative resolution method MUST be identified as
+   &#39;top&#39; in IRIS URIs.
+
+   The process for this condition is as follows:
+
+   1.  The IRIS [2] direct-resolution process is tried against
+       areg.iris.arpa.
+
+   2.  If the direct-resolution process yields no server for which a
+       connection can be made, then a negative response is returned, and
+       no further action is taken.
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 31]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   It is RECOMMENDED that IRIS clients issuing AREG1 requests use the
+   &#39;top&#39; resolution method when no resolution method has been explicitly
+   given by a user.  IRIS servers accepting AREG1 requests that seek
+   information for which they are not authoritative SHOULD refer clients
+   using the &#39;top&#39; resolution method.
+
+8.  Internationalization Considerations
+
+   This document lays out no new considerations for internationalization
+   beyond those specified in IRIS [2].
+
+9.  IANA Considerations
+
+   The following URN has been registered with IANA according to the IANA
+   considerations defined in IRIS [2]:
+
+      urn:ietf:params:xml:ns:areg1
+
+   The following S-NAPTR application service label has been registered
+   with IANA according to the IANA considerations defined in IRIS [2]:
+
+      AREG1
+
+   Under instructions from the IAB, the IANA will create a new second
+   level domain under .arpa called iris (i.e., iris.arpa.).  The
+   contents of this new domain are to be under the control of the IAB.
+   Under instructions from the IAB, the IANA will insert and maintain a
+   NAPTR DNS resource record in the iris.arpa. domain for the name
+   areg.iris.arpa.  The initial contents for that record is:
+
+   areg.iris.arpa.
+   ;;        order pref flags service                   re replacement
+   IN NAPTR  100   10   &quot;&quot;    &quot;AREG1:iris.xpc:iris.lwz&quot; &quot;&quot; areg.nro.net
+
+10.  Security Considerations
+
+   This document lays out no new considerations for security precautions
+   beyond those specified in IRIS [2].
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 32]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+11.  References
+
+11.1.  Normative References
+
+   [1]  Bradner, S., &quot;Key words for use in RFCs to Indicate Requirement
+        Levels&quot;, BCP 14, RFC 2119, March 1997.
+
+   [2]  Newton, A. and M. Sanz, &quot;IRIS: The Internet Registry Information
+        Service (IRIS) Core Protocol&quot;, RFC 3981, January 2005.
+
+   [3]  Newton, A. and M. Sanz, &quot;Using the Internet Registry Information
+        Service (IRIS) over the Blocks Extensible Exchange Protocol
+        (BEEP)&quot;, RFC 3983, January 2005.
+
+   [4]  Newton, A., &quot;Cross Registry Internet Service Protocol (CRISP)
+        Requirements&quot;, RFC 3707, February 2004.
+
+11.2.  Informative References
+
+   [5]  World Wide Web Consortium, &quot;Extensible Markup Language (XML)
+        1.0&quot;, W3C XML, February 1998,
+        &lt;http://www.w3.org/TR/1998/REC-xml-19980210&gt;.
+
+   [6]  World Wide Web Consortium, &quot;Namespaces in XML&quot;, W3C XML
+        Namespaces, January 1999,
+        &lt;http://www.w3.org/TR/1999/REC-xml-names-19990114&gt;.
+
+   [7]  World Wide Web Consortium, &quot;XML Schema Part 2: Datatypes&quot;,
+        W3C XML Schema, October 2000,
+        &lt;http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/&gt;.
+
+   [8]  World Wide Web Consortium, &quot;XML Schema Part 1: Structures&quot;,
+        W3C XML Schema, October 2000,
+        &lt;http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/&gt;.
+
+   [9]  International Organization for Standardization, &quot;Codes for the
+        representation of names of countries, 3rd edition&quot;, ISO Standard
+        3166, August 1988.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 33]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+Appendix A.  Privacy Considerations
+
+   Internet address registries store contact details and other
+   information that may be abused.  The XML Schema defined in this
+   document purposefully makes the inclusion of any data in a response
+   an option that is dependent on the needs and policies of the Internet
+   address registry serving the data.
+
+   Combined with the authentication mechanisms of an IRIS transfer
+   protocol, Internet address registries may derive authorization
+   policies to meet their needs without compromising general privacy
+   policies.  As an example, the constituents of an Internet address
+   registry may create a policy whereby NOC contact email addresses are
+   only to be available to members of the Internet address registry.  To
+   institute this policy, the XML elements for NOC contacts will never
+   appear in a response to a user that has not been authenticated to be
+   a member of the Internet address registry.
+
+Appendix B.  Example Requests and Responses
+
+   The examples in this section use the string &quot;C:&quot; to denote data sent
+   by a client to a server and the string &quot;S:&quot; to denote data sent by a
+   server to a client.
+
+B.1.  Example 1
+
+   The following is an example of entity lookup for the contact-handle
+   of &#39;JN560-RIR1&#39;.
+
+   C: &lt;?xml version=&quot;1.0&quot;?&gt;
+   C: &lt;request xmlns=&quot;urn:ietf:params:xml:ns:iris1&quot;
+   C:   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+   C:   xsi:schemaLocation=&quot;urn:ietf:params:xml:ns:iris1 iris.xsd&quot; &gt;
+   C:
+   C:   &lt;searchSet&gt;
+   C:
+   C:     &lt;lookupEntity
+   C:       registryType=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   C:       entityClass=&quot;contact-handle&quot;
+   C:       entityName=&quot;JN560-RIR1&quot; /&gt;
+   C:
+   C:   &lt;/searchSet&gt;
+   C:
+   C: &lt;/request&gt;
+
+   S: &lt;?xml version=&quot;1.0&quot;?&gt;
+   S: &lt;iris:response
+   S:   xmlns:iris=&quot;urn:ietf:params:xml:ns:iris1&quot;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 34]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   S:   xmlns=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   S:   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+   S:
+   S:   &lt;iris:resultSet&gt;
+   S:     &lt;iris:answer&gt;
+   S:
+   S:       &lt;contact
+   S:         authority=&quot;rir.example.net&quot;
+   S:         registryType=&quot;areg1&quot;
+   S:         entityClass=&quot;contact-handle&quot;
+   S:         entityName=&quot;JN560-RIR1&quot;&gt;
+   S:
+   S:         &lt;contactHandle&gt;JN560-RIR1&lt;/contactHandle&gt;
+   S:
+   S:         &lt;commonName&gt;Bob Smurd&lt;/commonName&gt;
+   S:
+   S:         &lt;organization
+   S:           iris:referentType=&quot;organization&quot;
+   S:           authority=&quot;rir.example.net&quot;
+   S:           registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;organization-id&quot;
+   S:           entityName=&quot;ORGX&quot;&gt;
+   S:           &lt;iris:displayName
+   S:             language=&quot;en&quot;&gt;
+   S:             Organization X, Inc.
+   S:           &lt;/iris:displayName&gt;
+   S:         &lt;/organization&gt;
+   S:
+   S:         &lt;phone&gt;
+   S:           &lt;number&gt;+1-703-555-5555&lt;/number&gt;
+   S:           &lt;type&gt;office&lt;/type&gt;
+   S:         &lt;/phone&gt;
+   S:
+   S:       &lt;/contact&gt;
+   S:
+   S:     &lt;/iris:answer&gt;
+   S:   &lt;/iris:resultSet&gt;
+   S:
+   S: &lt;/iris:response&gt;
+
+                           Figure 11: Example 1
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 35]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+B.2.  Example 2
+
+   The following example shows a query to find the IP networks
+   containing a given address.
+
+   C: &lt;?xml version=&quot;1.0&quot;?&gt;
+   C: &lt;request xmlns=&quot;urn:ietf:params:xml:ns:iris1&quot;
+   C:          xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+   C:
+   C:   &lt;searchSet&gt;
+   C:     &lt;findNetworksByAddress
+   C:       xmlns=&quot;urn:ietf:params:xml:ns:areg1&quot;&gt;
+   C:
+   C:       &lt;ipv4Address&gt;
+   C:         &lt;start&gt;192.0.2.134&lt;/start&gt;
+   C:       &lt;/ipv4Address&gt;
+   C:
+   C:       &lt;specificity
+   C:         allowEquivalences=&quot;true&quot;
+   C:         &gt;one-level-less-specific&lt;/specificity&gt;
+   C:
+   C:     &lt;/findNetworksByAddress&gt;
+   C:   &lt;/searchSet&gt;
+   C:
+   C: &lt;/request&gt;
+
+   S: &lt;?xml version=&quot;1.0&quot;?&gt;
+   S: &lt;iris:response xmlns:iris=&quot;urn:ietf:params:xml:ns:iris1&quot;
+   S:   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+   S:
+   S:   &lt;iris:resultSet&gt;
+   S:     &lt;iris:answer&gt;
+   S:       &lt;areg:ipv4Network
+   S:         xmlns=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   S:         xmlns:areg=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   S:         xsi:schemaLocation=&quot;urn:ietf:params:xml:ns:areg1 areg.xsd&quot;
+   S:         authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:         entityClass=&quot;ipv4-handle&quot; entityName=&quot;NET-192-0-2-128-1&quot; &gt;
+   S:         &lt;networkHandle&gt;
+   S:           NET-192-0-2-128-1
+   S:         &lt;/networkHandle&gt;
+   S:         &lt;name&gt;
+   S:           UU-192-0-2-D6
+   S:         &lt;/name&gt;
+   S:         &lt;startAddress&gt;
+   S:           192.0.2.128
+   S:         &lt;/startAddress&gt;
+   S:         &lt;endAddress&gt;
+
+
+
+Gunduz, et al.              Standards Track                    [Page 36]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   S:           192.0.2.255
+   S:         &lt;/endAddress&gt;
+   S:         &lt;networkType&gt;reassigned&lt;/networkType&gt;
+   S:         &lt;organization
+   S:           iris:referentType=&quot;areg:organization&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;organization-id&quot; entityName=&quot;ORGX&quot;&gt;
+   S:           &lt;iris:displayName language=&quot;en&quot;&gt;
+   S:             Organization X, Inc.
+   S:           &lt;/iris:displayName&gt;
+   S:         &lt;/organization&gt;
+   S:         &lt;parent
+   S:           iris:referentType=&quot;areg:ipv4Network&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;ipv4-handle&quot; entityName=&quot;NET-192-0-2-0-1&quot;/&gt;
+   S:         &lt;techContact
+   S:           iris:referentType=&quot;areg:contact&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;contact-handle&quot; entityName=&quot;JN560-RIR1&quot;&gt;
+   S:           &lt;iris:displayName language=&quot;en&quot;&gt;
+   S:             Smurd, Bob
+   S:           &lt;/iris:displayName&gt;
+   S:         &lt;/techContact&gt;
+   S:         &lt;registrationDate&gt;
+   S:           2002-11-18T00:00:00-00:00
+   S:         &lt;/registrationDate&gt;
+   S:         &lt;lastUpdatedDate&gt;
+   S:           2002-11-18T00:00:00-00:00
+   S:         &lt;/lastUpdatedDate&gt;
+   S:         &lt;iris:seeAlso
+   S:           iris:referentType=&quot;ANY&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;local&quot; entityName=&quot;portability-notice&quot;/&gt;
+   S:       &lt;/areg:ipv4Network&gt;
+   S:       &lt;areg:ipv4Network
+   S:         xmlns=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   S:         xmlns:areg=&quot;urn:ietf:params:xml:ns:areg1&quot;
+   S:         xsi:schemaLocation=&quot;urn:ietf:params:xml:ns:areg1 areg.xsd&quot;
+   S:         authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:         entityClass=&quot;ipv4-handle&quot; entityName=&quot;NET-192-0-2-0-2&quot; &gt;
+   S:         &lt;networkHandle&gt;
+   S:           NET-192-0-2-0-2
+   S:         &lt;/networkHandle&gt;
+   S:         &lt;name&gt;
+   S:           UU-192-0-2-0-D5
+   S:         &lt;/name&gt;
+   S:         &lt;startAddress&gt;
+   S:           192.0.2.0
+
+
+
+Gunduz, et al.              Standards Track                    [Page 37]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   S:         &lt;/startAddress&gt;
+   S:         &lt;endAddress&gt;
+   S:           192.0.2.255
+   S:         &lt;/endAddress&gt;
+   S:         &lt;networkType&gt;direct allocation&lt;/networkType&gt;
+   S:         &lt;nameServer&gt;auth03.ns.example.org&lt;/nameServer&gt;
+   S:         &lt;nameServer&gt;auth00.ns.example.org&lt;/nameServer&gt;
+   S:         &lt;organization
+   S:           iris:referentType=&quot;areg:organization&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;organization-id&quot; entityName=&quot;ORGY&quot;&gt;
+   S:           &lt;iris:displayName language=&quot;en&quot;&gt;
+   S:             Organization Y, Inc.
+   S:           &lt;/iris:displayName&gt;
+   S:         &lt;/organization&gt;
+   S:         &lt;parent
+   S:           iris:referentType=&quot;areg:ipv4Network&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;ipv4-handle&quot; entityName=&quot;NET-192-0-2-0-1&quot;/&gt;
+   S:         &lt;techContact
+   S:           iris:referentType=&quot;areg:contact&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;contact-handle&quot; entityName=&quot;OA12-RIR1&quot; /&gt;
+   S:         &lt;registrationDate&gt;
+   S:           2000-10-27T00:00:00-00:00
+   S:         &lt;/registrationDate&gt;
+   S:         &lt;lastUpdatedDate&gt;
+   S:           2002-02-13T00:00:00-00:00
+   S:         &lt;/lastUpdatedDate&gt;
+   S:         &lt;iris:seeAlso
+   S:           iris:referentType=&quot;ANY&quot;
+   S:           authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:           entityClass=&quot;local&quot; entityName=&quot;portability-notice&quot;/&gt;
+   S:       &lt;/areg:ipv4Network&gt;
+   S:     &lt;/iris:answer&gt;
+   S:     &lt;iris:additional&gt;
+   S:       &lt;iris:simpleEntity
+   S:         authority=&quot;rir.example.net&quot; registryType=&quot;areg1&quot;
+   S:         entityClass=&quot;local&quot; entityName=&quot;portability-notice&quot; &gt;
+   S:         &lt;iris:property name=&quot;portability&quot; language=&quot;en&quot;&gt;
+   S:           Addresses within this block are non-portable.
+   S:         &lt;/iris:property&gt;
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 38]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   S:       &lt;/iris:simpleEntity&gt;
+   S:     &lt;/iris:additional&gt;
+   S:   &lt;/iris:resultSet&gt;
+   S:
+   S: &lt;/iris:response&gt;
+
+                           Figure 12: Example 2
+
+Appendix C.  Specificity Examples
+
+   This section includes examples to clarify specificity options for
+   network and ASN searches.
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+
+                        Contents of the DB
+
+                     Figure 13: Specificity Example 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 39]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - |                         192.0.2.0  - 192.0.2.9
+
+
+                        Exact match (1)
+
+                        Result: C
+
+                     Figure 14: Specificity Example 2
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - - |                       192.0.2.0  - 192.0.2.12
+
+
+                         Exact match (2)
+
+                         Result: None
+
+                     Figure 15: Specificity Example 3
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 40]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - - - |                     192.0.2.0  - 192.0.2.15
+
+
+                All more specifics, allowEquivalences = false
+
+                Result: C, F, &amp; G (A is not included; exact match)
+
+                     Figure 16: Specificity Example 4
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - - - |                     192.0.2.0  - 192.0.2.15
+
+
+                All more specifics, allowEquivalences = true
+
+                Result: A, C, F, &amp; G (A is included; exact match)
+
+                     Figure 17: Specificity Example 5
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 41]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - - - |                     192.0.2.0  - 192.0.2.15
+
+
+                One level more specifics, allowEquivalences = false
+
+                Result: C
+
+                     Figure 18: Specificity Example 6
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - - - - |                     192.0.2.0  - 192.0.2.15
+
+
+                One level more specifics, allowEquivalences = true
+
+                Result: A
+
+                     Figure 19: Specificity Example 7
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 42]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query          |- - |                         192.0.2.6  - 192.0.2.9
+
+
+                All less specifics, allowEquivalences = true
+
+                Result: A, C, &amp; G (G is included; exact match)
+
+                     Figure 20: Specificity Example 8
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query          |- - |                         192.0.2.6  - 192.0.2.9
+
+
+                All less specifics, allowEquivalences = false
+
+                Result: A &amp; C (G is not included; exact match)
+
+                     Figure 21: Specificity Example 9
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 43]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query          |- - |                         192.0.2.6  - 192.0.2.9
+
+
+                One level less specifics, allowEquivalences = true
+
+                Result: G (the exact match)
+
+                     Figure 22: Specificity Example 10
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query          |- - |                         192.0.2.6  - 192.0.2.9
+
+
+                One level less specifics, allowEquivalences = false
+
+                Result: C
+
+                     Figure 23: Specificity Example 11
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 44]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query|- - - - - - |                           192.0.2.0  - 192.0.2.8
+
+
+             One level less specifics, allowEquivalences = false or true
+
+             Result: C
+
+                     Figure 24: Specificity Example 12
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query  =  E
+
+
+                  Find parent (Query argument is a handle)
+
+                  Result: D
+
+                     Figure 25: Specificity Example 13
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 45]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+   A    |------------------|                     192.0.2.0  - 192.0.2.15
+
+   B                        |------------------| 192.0.2.16 - 192.0.2.31
+
+   C    |--------------|                         192.0.2.0  - 192.0.2.9
+
+   D                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   E                        |---------------|    192.0.2.16 - 192.0.2.30
+
+   F    |--------|                               192.0.2.0  - 192.0.2.5
+
+   G              |----|                         192.0.2.6  - 192.0.2.9
+
+   Query  =  D
+
+
+                   Find child (Query argument is a handle)
+
+                   Result: E
+
+                     Figure 26: Specificity Example 14
+
+Appendix D.  Contributors
+
+   David Blacka and Tim Christensen made substantial contributions to
+   this document.
+
+Appendix E.  Acknowledgements
+
+   Eric Hall, William Leibzon, April Marine, George Michaelson, Tim
+   Christensen Cathy Murphy, Andrei Robachevsky, Marcos Sanz, Frederico
+   Neves, Ted Hardie, and many others contributed constructively in the
+   mailing list discussions and IETF Meeting sessions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 46]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+Authors&#39; Addresses
+
+   Engin Gunduz
+   RIPE NCC
+   Singel 258
+   Amsterdam  1016AB
+   The Netherlands
+
+   Phone: +31 20 535 4444
+   EMail: e.gunduz@computer.org
+
+
+   Andrew L. Newton
+   VeriSign, Inc.
+   21345 Ridgetop Circle
+   Sterling, VA  20166
+   USA
+
+   Phone: +1 703 948 3382
+   EMail: andy@hxr.us
+
+
+   Shane W. Kerr
+   RIPE NCC
+   Singel 258
+   Amsterdam  1016AB
+   The Netherlands
+
+   Phone: +31 20 535 4444
+   EMail: shane@time-travellers.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 47]
+
+RFC 4698               IRIS Address Registry Type           October 2006
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2006).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   &quot;AS IS&quot; basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
+
+
+
+
+
+
+
+Gunduz, et al.              Standards Track                    [Page 48]
+
+</pre>

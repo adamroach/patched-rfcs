@@ -1,0 +1,134 @@
+<div style='border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>This document has been updated by the following errata, which cannot be shown in-line in the document. Please see the end of this file for additional details: Editorial <a href='https://www.rfc-editor.org/errata/eid2102'>Errata 2102</a></i></b></div><pre>
+
+
+
+
+
+
+Network Working Group                                         T. Mallory
+Request for Comments: 1141                                   A. Kullberg
+Obsoletes: RFC 1071                                   BBN Communications
+                                                            January 1990
+
+
+             Incremental Updating of the Internet Checksum
+
+Status of this Memo
+
+   This memo correctly describes the incremental update procedure for
+   use with the standard Internet checksum.  It is intended to replace
+   the description of Incremental Update in RFC 1071.  This is not a
+   standard but rather, an implementation technique.  Distribution of
+   this memo is unlimited.
+
+Description
+
+   In RFC 1071 on pages 4 and 5, there is a description of a method to
+   update the IP checksum in the IP header without having to completely
+   recompute the checksum.  In particular, the RFC recommends the
+   following equation for computing the update checksum C&#39; from the
+   original checksum C, and the old and new values of byte m:
+
+         C&#39; = C + (-m) + m&#39; = C + (m&#39; - m)
+
+   While the equation above is correct, it is not very useful for
+   incremental updates since the equation above updates the checksum C,
+   rather than the 1&#39;s complement of the checksum, ~C, which is the
+   value stored in the checksum field.  In addition, it suffers because
+   the notation does not clearly specify that all arithmetic, including
+   the unary negation, must be performed one&#39;s complement, and so is
+   difficult to use to build working code.  The useful calculation for
+   2&#39;s complement machines is:
+
+         ~C&#39; = ~(C + (-m) + m&#39;) = ~C + (m - m&#39;) = ~C + m + ~m&#39;
+
+   In the oft-mentioned case of updating the IP TTL field, subtracting
+   one from the TTL means ADDING 1 or 256 as appropriate to the checksum
+   field in the packet, using one&#39;s complement addition.  One big-endian
+   non-portable implementation in C looks like:
+
+      unsigned long sum;
+      ipptr-&gt;ttl--;                  /* decrement ttl */
+      sum = ipptr-&gt;Checksum + 0x100;  /* increment checksum high byte*/
+      ipptr-&gt;Checksum = (sum + (sum&gt;&gt;16)) /* add carry */
+
+   This special case can be optimized in many ways: for instance, you
+
+
+
+Mallory &amp; Kullberg                                              [Page 1]
+
+RFC 1141                  Incremental Updating              January 1990
+
+
+   can bundle updating and checking the ttl.  Compiler mileage may vary.
+   Here is a more general and possibly more helpful example which
+   updates the ttl by n seconds:
+
+      UpdateTTL(iph,n)
+      struct ip_hdr *ipptr;
+      unsigned char n;
+      {
+          unsigned long sum;
+          unsigned short old;
+
+          old = ntohs(*(unsigned short *)&amp;ipptr-&gt;ttl);
+          ipptr-&gt;ttl -= n;
+          sum = old + (~ntohs(*(unsigned short *)&amp;ipptr-&gt;ttl) &amp; 0xffff);
+          sum += ntohs(ipptr-&gt;Checksum);
+          sum = (sum &amp; 0xffff) + (sum&gt;&gt;16);
+          ipptr-&gt;Checksum = htons(sum + (sum&gt;&gt;16));
+      }
+
+Security Considerations
+
+   Security issues are not addressed in this memo.
+
+Authors&#39; Addresses
+
+   Tracy Mallory
+   BBN Communications Corporation
+   50 Moulton Street
+   Cambridge, MA 02238
+
+   Phone: (617) 873-3193
+
+   EMail: tmallory@CCV.BBN.COM
+
+
+   A. Kullberg
+   BBN Communications Corporation
+   50 Moulton Street
+   Cambridge, MA 02238
+
+   Phone: (617) 873-4000
+
+   EMail:  akullberg@BBN.COM
+
+
+
+
+
+
+
+
+Mallory &amp; Kullberg                                              [Page 2]
+</pre>
+</pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>Editorial <a href='https://www.rfc-editor.org/errata/eid2102'>Errata 2102</a> updates this document as follows:</i></b><br/><pre style='margin:20px'>Section Header says:
+
+
+Network Working Group
+Request for Comments: 1141
+Obsoletes: RFC 1071
+
+It should say:
+
+Network Working Group
+Request for Comments: 1141
+Updates: RFC 1071
+
+Notes:
+
+The RFC-Editor said RFC 1141 updates and does not obsolete RFC 1071.
+
+</pre></div><pre>

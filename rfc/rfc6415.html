@@ -1,0 +1,919 @@
+<pre>
+
+
+
+
+
+
+Internet Engineering Task Force (IETF)              E. Hammer-Lahav, Ed.
+Request for Comments: 6415                                       B. Cook
+Category: Standards Track                                   October 2011
+ISSN: 2070-1721
+
+
+                           Web Host Metadata
+
+Abstract
+
+   This specification describes a method for locating host metadata as
+   well as information about individual resources controlled by the
+   host.
+
+Status of This Memo
+
+   This is an Internet Standards Track document.
+
+   This document is a product of the Internet Engineering Task Force
+   (IETF).  It represents the consensus of the IETF community.  It has
+   received public review and has been approved for publication by the
+   Internet Engineering Steering Group (IESG).  Further information on
+   Internet Standards is available in Section 2 of RFC 5741.
+
+   Information about the current status of this document, any errata,
+   and how to provide feedback on it may be obtained at
+   http://www.rfc-editor.org/info/rfc6415.
+
+Copyright Notice
+
+   Copyright (c) 2011 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust&#39;s Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+
+
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 1]
+
+RFC 6415                        host-meta                   October 2011
+
+
+Table of Contents
+
+   1. Introduction ....................................................2
+      1.1. Example ....................................................3
+           1.1.1. Processing Resource-Specific Information ............4
+      1.2. Notational Conventions .....................................5
+   2. Obtaining host-meta Documents ...................................6
+   3. The host-meta Document ..........................................6
+      3.1. XML Document Format ........................................7
+           3.1.1. The &quot;Link&quot; Element ..................................7
+   4. Processing host-meta Documents ..................................8
+      4.1. Host-Wide Information ......................................9
+      4.2. Resource-Specific Information ..............................9
+   5. Security Considerations ........................................10
+   6. IANA Considerations ............................................11
+      6.1. The &quot;host-meta&quot; Well-Known URI ............................11
+      6.2. The &quot;host-meta.json&quot; Well-Known URI .......................11
+      6.3. The &quot;lrdd&quot; Relation Type ..................................11
+   Appendix A. JRD Document Format ...................................12
+   Appendix B. Acknowledgments .......................................15
+   Normative References ..............................................15
+
+1.  Introduction
+
+   Web-based protocols often require the discovery of host policy or
+   metadata, where &quot;host&quot; is not a single resource but the entity
+   controlling the collection of resources identified by Uniform
+   Resource Identifiers (URIs) with a common URI host [RFC3986], which
+   can be served by one or more servers.
+
+   While web protocols have a wide range of metadata needs, they often
+   use metadata that is concise, has simple syntax requirements, and can
+   benefit from storing their metadata in a common location used by
+   other related protocols.
+
+   Because there is no URI or representation available to describe a
+   host, many of the methods used for associating per-resource metadata
+   (such as HTTP headers) are not available.  This often leads to the
+   overloading of the root HTTP resource (e.g., &#39;http://example.com/&#39;)
+   with host metadata that is not specific or relevant to the root
+   resource itself.
+
+   This document defines a lightweight metadata document format for
+   describing hosts (thus the name &quot;host-meta&quot;), intended for use by
+   web-based protocols.  This document also registers the well-known URI
+   suffix &quot;host-meta&quot; in the Well-Known URI Registry established by
+   [RFC5785].
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 2]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   In addition, there are times when a host-wide scope for policy or
+   metadata is too coarse-grained. host-meta provides two mechanisms for
+   providing resource-specific information:
+
+   o  Link Templates - links using a URI template instead of a fixed
+      target URI, providing a way to define generic rules for generating
+      resource-specific links by applying the individual resource URI to
+      the template.
+
+   o  Link-based Resource Descriptor Documents (LRDD, pronounced &#39;lard&#39;)
+      - descriptor documents providing resource-specific information,
+      typically information that cannot be expressed using link
+      templates.  LRDD documents are linked to resources or host-meta
+      documents using link templates with the &quot;lrdd&quot; relation type.
+
+1.1.  Example
+
+   The following is a simple host-meta document including both host-wide
+   and resource-specific information for the &#39;example.com&#39; host:
+
+   &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+   &lt;XRD xmlns=&#39;http://docs.oasis-open.org/ns/xri/xrd-1.0&#39;&gt;
+
+     &lt;!-- Host-Wide Information --&gt;
+
+     &lt;Property type=&#39;http://protocol.example.net/version&#39;&gt;1.0&lt;/Property&gt;
+
+     &lt;Link rel=&#39;copyright&#39;
+      href=&#39;http://example.com/copyright&#39; /&gt;
+
+     &lt;!-- Resource-specific Information --&gt;
+
+     &lt;Link rel=&#39;hub&#39;
+      template=&#39;http://example.com/hub&#39; /&gt;
+
+     &lt;Link rel=&#39;lrdd&#39;
+      type=&#39;application/xrd+xml&#39;
+      template=&#39;http://example.com/lrdd?uri={uri}&#39; /&gt;
+
+     &lt;Link rel=&#39;author&#39;
+      template=&#39;http://example.com/author?q={uri}&#39; /&gt;
+
+   &lt;/XRD&gt;
+
+
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 3]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   The host-wide information that applies to the host in its entirety
+   provided by the document includes:
+
+   o  An &quot;http://protocol.example.net/version&quot; host property with a
+      value of &quot;1.0&quot;.
+
+   o  A link to the host&#39;s copyright policy (&quot;copyright&quot;).
+
+   The resource-specific information provided by the document includes:
+
+   o  A link template for receiving real-time updates (&quot;hub&quot;) about
+      individual resources.  Since the template does not include a
+      template variable, the target URI is identical for all resources.
+
+   o  A LRDD document link template (&quot;lrdd&quot;) for obtaining additional
+      resource-specific information contained in a separate document for
+      each individual resource.
+
+   o  A link template for finding information about the author of
+      individual resources (&quot;author&quot;).
+
+1.1.1.  Processing Resource-Specific Information
+
+   When looking for information about an individual resource -- for
+   example, the resource identified by &#39;http://example.com/xy&#39; -- the
+   resource URI is applied to the templates found, producing the
+   following links:
+
+    &lt;Link rel=&#39;hub&#39;
+     href=&#39;http://example.com/hub&#39; /&gt;
+
+    &lt;Link rel=&#39;lrdd&#39;
+     type=&#39;application/xrd+xml&#39;
+     href=&#39;http://example.com/lrdd?uri=http%3A%2F%2Fexample.com%2Fxy&#39; /&gt;
+
+    &lt;Link rel=&#39;author&#39;
+     href=&#39;http://example.com/author?q=http%3A%2F%2Fexample.com%2Fxy&#39; /&gt;
+
+   The LRDD document for &#39;http://example.com/xy&#39; (obtained via an HTTP
+   &quot;GET&quot; request):
+
+     &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+     &lt;XRD xmlns=&#39;http://docs.oasis-open.org/ns/xri/xrd-1.0&#39;&gt;
+
+       &lt;Subject&gt;http://example.com/xy&lt;/Subject&gt;
+
+       &lt;Property type=&#39;http://spec.example.net/color&#39;&gt;red&lt;/Property&gt;
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 4]
+
+RFC 6415                        host-meta                   October 2011
+
+
+       &lt;Link rel=&#39;hub&#39;
+        href=&#39;http://example.com/another/hub&#39; /&gt;
+
+       &lt;Link rel=&#39;author&#39;
+        href=&#39;http://example.com/john&#39; /&gt;
+     &lt;/XRD&gt;
+
+   Together, the information available about the individual resource
+   (presented as an Extensible Resource Descriptor (XRD) document for
+   illustration purposes) is:
+
+   &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+   &lt;XRD xmlns=&#39;http://docs.oasis-open.org/ns/xri/xrd-1.0&#39;&gt;
+
+    &lt;Subject&gt;http://example.com/xy&lt;/Subject&gt;
+
+    &lt;Property type=&#39;http://spec.example.net/color&#39;&gt;red&lt;/Property&gt;
+
+    &lt;Link rel=&#39;hub&#39;
+     href=&#39;http://example.com/hub&#39; /&gt;
+
+    &lt;Link rel=&#39;hub&#39;
+     href=&#39;http://example.com/another/hub&#39; /&gt;
+
+    &lt;Link rel=&#39;author&#39;
+     href=&#39;http://example.com/john&#39; /&gt;
+
+    &lt;Link rel=&#39;author&#39;
+     href=&#39;http://example.com/author?q=http%3A%2F%2Fexample.com%2Fxy&#39; /&gt;
+
+   &lt;/XRD&gt;
+
+   Note that the order of links matters and is based on their original
+   order in the host-meta and LRDD documents.  For example, the &quot;hub&quot;
+   link obtained from the host-meta link template has a higher priority
+   than the link found in the LRDD document because the host-meta link
+   appears before the &quot;lrdd&quot; link.
+
+   On the other hand, the &quot;author&quot; link found in the LRDD document has a
+   higher priority than the link found in the host-meta document because
+   it appears after the &quot;lrdd&quot; link.
+
+1.2.  Notational Conventions
+
+   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
+   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;NOT RECOMMENDED&quot;, &quot;MAY&quot;, and
+   &quot;OPTIONAL&quot; in this document are to be interpreted as described in
+   [RFC2119].
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 5]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   This document uses the Augmented Backus-Naur Form (ABNF) notation of
+   [RFC5234].  Additionally, the following rules are included from
+   [RFC3986]: reserved, unreserved, and pct-encoded.
+
+2.  Obtaining host-meta Documents
+
+   The client obtains the host-meta document for a given host by sending
+   an HTTP [RFC2616] or an HTTPS [RFC2818] GET request to the host for
+   the &quot;/.well-known/host-meta&quot; path, using the default ports defined
+   for each protocol (e.g., port 80 for HTTP and port 443 for HTTPS).
+   The scope and meaning of host-meta documents obtained via other
+   protocols or ports is undefined.
+
+   The server MUST support at least one protocol but MAY support both.
+   If both protocols are supported, they MUST produce the same document.
+
+   The decision as to which protocol is used to obtain the host-meta
+   document has significant security ramifications, as described in
+   Section 5.
+
+   For example, the following request is used to obtain the host-meta
+   document for the &#39;example.com&#39; host:
+
+     GET /.well-known/host-meta HTTP/1.1
+     Host: example.com
+
+   If the server response indicates that the host-meta resource is
+   located elsewhere (a 301, 302, or 307 response status code), the
+   client SHOULD try to obtain the resource from the location provided
+   in the response.  This means that the host-meta document for one host
+   MAY be retrieved from another host.  Likewise, if the resource is not
+   available or does not exist (e.g., a 404 or 410 response status
+   code), the client SHOULD infer that metadata is not available via
+   this mechanism.
+
+   The host-meta document SHOULD be served with the
+   &quot;application/xrd+xml&quot; media type.
+
+3.  The host-meta Document
+
+   The host-meta document uses the XRD 1.0 document format as defined by
+   [OASIS.XRD-1.0], which provides a simple and extensible XML-based
+   schema for describing resources.  This specification defines
+   additional processing rules needed to describe hosts.  Documents MAY
+   include any elements included in the XRD 1.0 schema that are not
+   explicitly excluded by this specification.
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 6]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   The server MAY offer alternative representations of any XRD document
+   it serves (host-meta, LRDD, or other XRD-based documents).  The
+   client MAY request a particular representation using the HTTP
+   &quot;Accept&quot; request header field.  If no &quot;Accept&quot; request header field
+   is included with the request, or if the client requests an
+   &quot;application/xrd+xml&quot; representation, the server MUST respond using
+   the REQUIRED XRD 1.0 XML representation described in Section 3.1.
+
+   Applications using the host-meta document MAY require the server to
+   provide a specific alternative representation in addition to the
+   XRD 1.0 XML representation when explicitly requested by the client.
+
+   A JavaScript Object Notation (JSON) Resource Descriptor, known as
+   JRD, is described in Appendix A.  It is RECOMMENDED that servers
+   offer the JRD representation in addition to the XRD representation.
+
+3.1.  XML Document Format
+
+   The host-meta document root MUST be an &quot;XRD&quot; element.  The document
+   SHOULD NOT include a &quot;Subject&quot; element, as at this time no URI is
+   available to identify hosts.  The use of the &quot;Alias&quot; element in
+   host-meta is undefined and NOT RECOMMENDED.
+
+   The subject (or &quot;context IRI&quot;, as defined by [RFC5988]) of the XRD
+   &quot;Property&quot; and &quot;Link&quot; elements is the host described by the host-meta
+   document.  However, the subject of &quot;Link&quot; elements with a &quot;template&quot;
+   attribute is the individual resource whose URI is applied to the link
+   template, as described in Section 3.1.1.
+
+3.1.1.  The &quot;Link&quot; Element
+
+   The XRD &quot;Link&quot; element, when used with the &quot;href&quot; attribute, conveys
+   a link relation between the host described by the document and a
+   common target URI.
+
+   For example, the following link declares a common copyright license
+   for the entire scope:
+
+     &lt;Link rel=&#39;copyright&#39; href=&#39;http://example.com/copyright&#39; /&gt;
+
+   However, a &quot;Link&quot; element with a &quot;template&quot; attribute conveys a
+   relation whose context is an individual resource within the host-meta
+   document scope, and whose target is constructed by applying the
+   context resource URI to the template.  The template string MAY
+   contain a URI string without any variables to represent a resource-
+   level relation that is identical for every individual resource.
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 7]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   For example, a blog with multiple authors can provide information
+   about each article&#39;s author by providing an endpoint with a parameter
+   set to the URI of each article.  Each article has a unique author,
+   but all share the same pattern of where that information is located:
+
+     &lt;Link rel=&#39;author&#39;
+      template=&#39;http://example.com/author?article={uri}&#39; /&gt;
+
+3.1.1.1.  Template Syntax
+
+   This specification defines a simple template syntax for URI
+   transformation.  A template is a string containing brace-enclosed
+   (&quot;{}&quot;) variable names marking the parts of the string that are to be
+   substituted by the corresponding variable values.
+
+   Before substituting template variables, values MUST be encoded using
+   UTF-8, and any character other than unreserved (as defined by
+   [RFC3986]) MUST be percent-encoded per [RFC3986].
+
+   This specification defines a single variable -- &quot;uri&quot; -- as the
+   entire context resource URI.  Protocols MAY define additional
+   relation-specific variables and syntax rules, but SHOULD only do so
+   for protocol-specific relation types, and MUST NOT change the meaning
+   of the &quot;uri&quot; variable.  If a client is unable to successfully process
+   a template (e.g., unknown variable names, unknown or incompatible
+   syntax), the parent &quot;Link&quot; element SHOULD be ignored.
+
+   The template syntax ABNF follows:
+
+    URI-Template =  *( uri-char / variable )
+    variable     =  &quot;{&quot; var-name &quot;}&quot;
+    uri-char     =  ( reserved / unreserved / pct-encoded )
+    var-name     =  %x75.72.69 / ( 1*var-char ) ; &quot;uri&quot; or other names
+    var-char     =  ALPHA / DIGIT / &quot;.&quot; / &quot;_&quot;
+
+   For example:
+
+    Input:    http://example.com/r?f=1
+    Template: http://example.org/?q={uri}
+    Output:   http://example.org/?q=http%3A%2F%2Fexample.com%2Fr%3Ff%3D1
+
+4.  Processing host-meta Documents
+
+   Once the host-meta document has been obtained, the client processes
+   its content based on the type of information desired: host-wide or
+   resource-specific.
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 8]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   Clients usually look for a link with a specific relation type or
+   other attributes.  In such cases, the client does not need to process
+   the entire host-meta document and all linked LRDD documents, but
+   instead process the various documents in their prescribed order until
+   the desired information is found.
+
+   Protocols using host-meta must indicate whether the information they
+   seek is host-wide or resource-specific -- for example, &quot;obtain the
+   first host-meta resource-specific link using the &#39;author&#39; relation
+   type&quot;.  If both types are used for the same purpose (e.g., first look
+   for resource-specific, then look for host-wide), the protocol must
+   specify the processing order.
+
+4.1.  Host-Wide Information
+
+   When looking for host-wide information, the client MUST ignore any
+   &quot;Link&quot; elements with a &quot;template&quot; attribute, as well as any link
+   using the &quot;lrdd&quot; relation type.  All other elements are scoped as
+   host-wide.
+
+4.2.  Resource-Specific Information
+
+   Unlike host-wide information, which is contained solely within the
+   host-meta document, resource-specific information is obtained from
+   host-meta link templates, as well as from linked LRDD documents.
+
+   When looking for resource-specific information, the client constructs
+   a resource descriptor by collecting and processing all the host-meta
+   link templates.  For each link template:
+
+   1.  The client applies the URI of the desired resource to the
+       template, producing a resource-specific link.
+
+   2.  If the link&#39;s relation type is other than &quot;lrdd&quot;, the client adds
+       the link to the resource descriptor in order.
+
+   3.  If the link&#39;s relation type is &quot;lrdd&quot;:
+
+       3.1.  The client obtains the LRDD document by following the
+             scheme-specific rules for the LRDD document URI.  If the
+             document URI scheme is &quot;http&quot; or &quot;https&quot;, the document is
+             obtained via an HTTP &quot;GET&quot; request to the identified URI.
+             If the HTTP response status code is 301, 302, or 307, the
+             client MUST follow the redirection response and repeat the
+             request with the provided location.
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                    [Page 9]
+
+RFC 6415                        host-meta                   October 2011
+
+
+       3.2.  The client adds any links found in the LRDD document to the
+             resource descriptor in order, except for any link using the
+             &quot;lrdd&quot; relation type (processing is limited to a single
+             level of inclusion).  When adding links, the client SHOULD
+             retain any extension attributes and child elements if
+             present (e.g., &lt;Property&gt; or &lt;Title&gt; elements).
+
+       3.3.  The client adds any resource properties found in the LRDD
+             document to the resource descriptor in order (e.g., &lt;Alias&gt;
+             or &lt;Property&gt; child elements of the LRDD document &lt;XRD&gt;
+             root element).
+
+5.  Security Considerations
+
+   The host-meta document is designed to be used by other applications
+   explicitly &quot;opting-in&quot; to use the facility.  Therefore, any such
+   application MUST review the specific security implications of using
+   host-meta documents.  By itself, this specification does not provide
+   any protections or guarantees that any given host-meta document is
+   under the control of the appropriate entity as required by each
+   application.
+
+   The metadata returned by the host-meta resource is presumed to be
+   under the control of the appropriate authority and representative of
+   all the resources described by it.  If this resource is compromised
+   or otherwise under the control of another party, it may represent a
+   risk to the security of the server and data served by it, depending
+   on the applications using it.
+
+   Applications utilizing the host-meta document where the authenticity
+   of the information is necessary MUST require the use of the HTTPS
+   protocol and MUST NOT produce a host-meta document using other means.
+   In addition, such applications MUST require that any redirection
+   leading to the retrieval of a host-meta document also utilize the
+   HTTPS protocol.
+
+   Since the host-meta document is authoritative for the entire host,
+   not just the authority (combination of scheme, host, and port) of the
+   host-meta document server, applications MUST ensure that using a
+   host-meta document for another URI authority does not represent a
+   potential security exploit.
+
+   Protocols using host-meta templates must evaluate the construction of
+   their templates as well as any protocol-specific variables or syntax
+   to ensure that the templates cannot be abused by an attacker.  For
+   example, a client can be tricked into following a malicious link due
+   to a poorly constructed template that produces unexpected results
+   when its variable values contain unexpected characters.
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 10]
+
+RFC 6415                        host-meta                   October 2011
+
+
+6.  IANA Considerations
+
+6.1.  The &quot;host-meta&quot; Well-Known URI
+
+   This specification registers the &quot;host-meta&quot; well-known URI in the
+   Well-Known URI Registry as defined by [RFC5785].
+
+   URI suffix:  host-meta
+
+   Change controller:  IETF
+
+   Specification document(s):  RFC 6415
+
+   Related information:  The &quot;host-meta&quot; documents obtained from the
+      same host using the HTTP and HTTPS protocols (using default ports)
+      MUST be identical.
+
+6.2.  The &quot;host-meta.json&quot; Well-Known URI
+
+   This specification registers the &quot;host-meta.json&quot; well-known URI in
+   the Well-Known URI Registry as defined by [RFC5785].
+
+   URI suffix:  host-meta.json
+
+   Change controller:  IETF
+
+   Specification document(s):  RFC 6415
+
+   Related information:  The &quot;host-meta.json&quot; documents obtained from
+      the same host using the HTTP and HTTPS protocols (using default
+      ports) MUST be identical.
+
+6.3.  The &quot;lrdd&quot; Relation Type
+
+   This specification registers the &quot;lrdd&quot; relation type in the Link
+   Relation Type Registry defined by [RFC5988]:
+
+   Relation Name:  lrdd
+
+   Description:  Refers to further information about the link&#39;s context,
+      expressed as a LRDD (&quot;Link-based Resource Descriptor Document&quot;)
+      resource.  See RFC 6415 for information about processing this
+      relation type in host-meta documents.  When used elsewhere, it
+      refers to additional links and other metadata.  Multiple instances
+      indicate additional LRDD resources.  LRDD resources MUST have an
+      &quot;application/xrd+xml&quot; representation, and MAY have others.
+
+   Reference:  RFC 6415
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 11]
+
+RFC 6415                        host-meta                   October 2011
+
+
+Appendix A.  JRD Document Format
+
+   The JRD document format -- a general-purpose XRD 1.0 representation
+   -- uses the JavaScript Object Notation (JSON) format defined in
+   [RFC4627].  JRD uses the same elements and processing rules described
+   in Section 3.1.  The JRD format is designed to include the same base
+   functionality provided by the XML format, with the exception of
+   extensibility, as extensibility is beyond the scope of this
+   specification.
+
+   The client MAY request a JRD representation using the HTTP &quot;Accept&quot;
+   request header field with a value of &quot;application/json&quot;.  The server
+   MUST include the HTTP &quot;Content-Type&quot; response header field with a
+   value of &quot;application/json&quot;.  Any other &quot;Content-Type&quot; value (or lack
+   thereof) indicates that the server does not support the JRD format.
+
+   Alternatively, the client MAY request a JRD representation by
+   requesting the &quot;host-meta.json&quot; well-known document, by making a GET
+   request for &quot;/.well-known/host-meta.json&quot;, following the same process
+   used for &quot;/.well-known/host-meta&quot;.  If the server does not support
+   serving a JRD representation at this location, the server MUST
+   respond with an HTTP 404 (Not Found) status code.
+
+   XRD elements are serialized into a JSON object as follows:
+
+   o  The XML document declaration and &quot;XRD&quot; element are discarded.
+
+   o  The &quot;Subject&quot; element is included as a name/value pair with the
+      name &#39;subject&#39;, and value included as a string.
+
+   o  The &quot;Expires&quot; element is included as a name/value pair with the
+      name &#39;expires&#39;, and value included as a string.
+
+   o  &quot;Alias&quot; elements are included as a single name/value pair with the
+      name &#39;aliases&#39;, and value a string array containing the values of
+      each element in order.
+
+   o  &quot;Property&quot; elements are included as a single name/value pair with
+      the name &#39;properties&#39;, and value an object with each element
+      included as a name/value pair with the value of the &quot;type&quot;
+      attribute as name, and element value included as a string value.
+      The values of properties with empty values (i.e., using the
+      REQUIRED &quot;xsi:nil=&#39;true&#39;&quot; attribute) are included as null.  If
+      more than one &quot;Property&quot; element is present with the same &quot;type&quot;
+      attribute, only the last instance is included.
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 12]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   o  &quot;Link&quot; elements are included as a single name/value pair with the
+      name &#39;links&#39;, and value an array with each element included as an
+      object.  Each attribute is included as a name/value pair with the
+      attribute name as name, and value included as a string.
+
+   o  &quot;Link&quot; child &quot;Property&quot; elements are included using the same
+      method as XRD-level &quot;Property&quot; elements using a name/value pair
+      inside the link object.
+
+   o  &quot;Link&quot; child &quot;Title&quot; elements are included as a single object with
+      the name &#39;titles&#39;, and value an object with each element included
+      as a name/value pair with the value of the &quot;xml:lang&quot; attribute as
+      name, and element value included as a string value.  The names of
+      elements without an &quot;xml:lang&quot; attribute are added with the name
+      &#39;default&#39;.  If more than one &quot;Title&quot; element is present with the
+      same (or no) &quot;xml:lang&quot; attribute, only the last instance is
+      included.
+
+   o  The conversion of any other element is left undefined.
+
+   For example, the following XRD document...
+
+    &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+    &lt;XRD xmlns=&#39;http://docs.oasis-open.org/ns/xri/xrd-1.0&#39;
+         xmlns:xsi=&#39;http://www.w3.org/2001/XMLSchema-instance&#39;&gt;
+<font color='red'><s>
+
+      &lt;Subject&gt;http://blog.example.com/article/id/314&lt;/Subject&gt;
+      &lt;Expires&gt;2010-01-30T09:30:00Z&lt;/Expires&gt;
+
+      </s></font></pre><div style='overflow:auto;border:dashed;margin:8px;padding:24px;background-color:#FFFFAF;'><b><i>The preceding text has been updated by Technical <a href='https://www.rfc-editor.org/errata/eid3118'>Errata 3118</a> to instead read:</i></b><pre style='margin:20px'>
+
+      &lt;Expires&gt;2010-01-30T09:30:00Z&lt;/Expires&gt;
+      &lt;Subject&gt;http://blog.example.com/article/id/314&lt;/Subject&gt;
+
+</pre><i><b>Errata Notes: </b>
+
+The XML example in Appendix A. has the Subject before the Expires tag, which is wrong.
+
+XRD 1.0 defines[1] the &lt;XRD&gt; element as a &quot;sequence&quot; with &lt;Expires&gt; first, &lt;Subject&gt; second. A sequence is defined[2] as &quot;Sequence (the element information items match the particles in sequential order);&quot;.
+
+PSA: Because this is a minor problem with a non-normative example, processing as &quot;Hold For Document Update&quot;. -- Peter Saint-Andre
+
+[1] http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html#element.xrd
+[2] http://www.w3.org/TR/xmlschema-1/#Model_Group
+
+</i></div><pre>
+&lt;Alias&gt;http://blog.example.com/cool_new_thing&lt;/Alias&gt;
+      &lt;Alias&gt;http://blog.example.com/steve/article/7&lt;/Alias&gt;
+
+      &lt;Property type=&#39;http://blgx.example.net/ns/version&#39;&gt;1.2&lt;/Property&gt;
+      &lt;Property type=&#39;http://blgx.example.net/ns/version&#39;&gt;1.3&lt;/Property&gt;
+      &lt;Property type=&#39;http://blgx.example.net/ns/ext&#39; xsi:nil=&#39;true&#39; /&gt;
+
+      &lt;Link rel=&#39;author&#39; type=&#39;text/html&#39;
+            href=&#39;http://blog.example.com/author/steve&#39;&gt;
+        &lt;Title&gt;About the Author&lt;/Title&gt;
+        &lt;Title xml:lang=&#39;en-us&#39;&gt;Author Information&lt;/Title&gt;
+        &lt;Property type=&#39;http://example.com/role&#39;&gt;editor&lt;/Property&gt;
+      &lt;/Link&gt;
+
+      &lt;Link rel=&#39;author&#39; href=&#39;http://example.com/author/john&#39;&gt;
+        &lt;Title&gt;The other guy&lt;/Title&gt;
+        &lt;Title&gt;The other author&lt;/Title&gt;
+      &lt;/Link&gt;
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 13]
+
+RFC 6415                        host-meta                   October 2011
+
+
+      &lt;Link rel=&#39;copyright&#39;
+            template=&#39;http://example.com/copyright?id={uri}&#39; /&gt;
+    &lt;/XRD&gt;
+
+   ...is represented by the following JRD document:
+
+    {
+      &quot;subject&quot;:&quot;http://blog.example.com/article/id/314&quot;,
+      &quot;expires&quot;:&quot;2010-01-30T09:30:00Z&quot;,
+
+      &quot;aliases&quot;:[
+        &quot;http://blog.example.com/cool_new_thing&quot;,
+        &quot;http://blog.example.com/steve/article/7&quot;],
+
+      &quot;properties&quot;:{
+        &quot;http://blgx.example.net/ns/version&quot;:&quot;1.3&quot;,
+        &quot;http://blgx.example.net/ns/ext&quot;:null
+      },
+
+      &quot;links&quot;:[
+        {
+          &quot;rel&quot;:&quot;author&quot;,
+          &quot;type&quot;:&quot;text/html&quot;,
+          &quot;href&quot;:&quot;http://blog.example.com/author/steve&quot;,
+          &quot;titles&quot;:{
+            &quot;default&quot;:&quot;About the Author&quot;,
+            &quot;en-us&quot;:&quot;Author Information&quot;
+          },
+          &quot;properties&quot;:{
+            &quot;http://example.com/role&quot;:&quot;editor&quot;
+          }
+        },
+        {
+          &quot;rel&quot;:&quot;author&quot;,
+          &quot;href&quot;:&quot;http://example.com/author/john&quot;,
+          &quot;titles&quot;:{
+            &quot;default&quot;:&quot;The other author&quot;
+          }
+        },
+        {
+          &quot;rel&quot;:&quot;copyright&quot;,
+          &quot;template&quot;:&quot;http://example.com/copyright?id={uri}&quot;
+        }
+      ]
+    }
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 14]
+
+RFC 6415                        host-meta                   October 2011
+
+
+   Note that the &quot;Subject&quot; and &quot;Alias&quot; elements are NOT RECOMMENDED in
+   the context of host-meta documents, and are included in the example
+   for completeness only.
+
+Appendix B.  Acknowledgments
+
+   The authors would like to acknowledge the contributions of everyone
+   who provided feedback and use cases for this specification -- in
+   particular, Dirk Balfanz, DeWitt Clinton, Eve Maler, Breno de
+   Medeiros, Brad Fitzpatrick, James Manger, Will Norris, Mark
+   Nottingham, John Panzer, Drummond Reed, and Peter Saint-Andre.
+
+Normative References
+
+   [OASIS.XRD-1.0]
+              Hammer-Lahav, E., Ed., and W. Norris, Ed., &quot;Extensible
+              Resource Descriptor (XRD) Version 1.0&quot;, November 2010,
+              &lt;http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html&gt;.
+
+   [RFC2119]  Bradner, S., &quot;Key words for use in RFCs to Indicate
+              Requirement Levels&quot;, BCP 14, RFC 2119, March 1997.
+
+   [RFC2616]  Fielding, R., Gettys, J., Mogul, J., Frystyk, H.,
+              Masinter, L., Leach, P., and T. Berners-Lee, &quot;Hypertext
+              Transfer Protocol -- HTTP/1.1&quot;, RFC 2616, June 1999.
+
+   [RFC2818]  Rescorla, E., &quot;HTTP Over TLS&quot;, RFC 2818, May 2000.
+
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, &quot;Uniform
+              Resource Identifier (URI): Generic Syntax&quot;, STD 66,
+              RFC 3986, January 2005.
+
+   [RFC4627]  Crockford, D., &quot;The application/json Media Type for
+              JavaScript Object Notation (JSON)&quot;, RFC 4627, July 2006.
+
+   [RFC5234]  Crocker, D., Ed., and P. Overell, &quot;Augmented BNF for
+              Syntax Specifications: ABNF&quot;, STD 68, RFC 5234,
+              January 2008.
+
+   [RFC5785]  Nottingham, M. and E. Hammer-Lahav, &quot;Defining Well-Known
+              Uniform Resource Identifiers (URIs)&quot;, RFC 5785,
+              April 2010.
+
+   [RFC5988]  Nottingham, M., &quot;Web Linking&quot;, RFC 5988, October 2010.
+
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 15]
+
+RFC 6415                        host-meta                   October 2011
+
+
+Authors&#39; Addresses
+
+   Eran Hammer-Lahav (editor)
+
+   EMail: eran@hueniverse.com
+   URI:   http://hueniverse.com
+
+
+   Blaine Cook
+
+   EMail: romeda@gmail.com
+   URI:   http://romeda.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hammer-Lahav &amp; Cook          Standards Track                   [Page 16]
+
+</pre>
